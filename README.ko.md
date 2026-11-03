@@ -8,7 +8,7 @@ Bilingual Reader는 웹페이지 본문을 식별하고 각 문단 옆에 번역
 
 빌드, npm 설치, 별도의 서드파티 런타임이 필요하지 않습니다. 확장 프로그램 화면은 현재 주로 중국어 간체로 제공됩니다. 여러 언어의 README는 동일한 확장 프로그램을 설명합니다.
 
-[웹사이트](https://xuyang1996.github.io/bilingual-reader/) · [다운로드](https://github.com/xuyang1996/bilingual-reader/releases) · [개인정보 처리방침](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [문제 신고](https://github.com/xuyang1996/bilingual-reader/issues)
+[웹사이트](https://xuyang1996.github.io/bilingual-reader/ko/) · [다운로드](https://github.com/xuyang1996/bilingual-reader/releases) · [개인정보 처리방침](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [문제 신고](https://github.com/xuyang1996/bilingual-reader/issues)
 
 ## 미리 보기
 

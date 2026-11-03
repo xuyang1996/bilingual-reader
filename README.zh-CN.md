@@ -8,7 +8,7 @@ Bilingual Reader 是一个 Chrome 扩展：识别网页正文，把译文放在�
 
 无需构建、无需安装 npm 依赖，也没有第三方运行时依赖。扩展界面目前以简体中文为主；这些 README 的语言版本介绍的是同一个扩展。
 
-[项目主页](https://xuyang1996.github.io/bilingual-reader/) · [下载](https://github.com/xuyang1996/bilingual-reader/releases) · [隐私政策](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [问题反馈](https://github.com/xuyang1996/bilingual-reader/issues)
+[项目主页](https://xuyang1996.github.io/bilingual-reader/zh-CN/) · [下载](https://github.com/xuyang1996/bilingual-reader/releases) · [隐私政策](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [问题反馈](https://github.com/xuyang1996/bilingual-reader/issues)
 
 ## 效果预览
 

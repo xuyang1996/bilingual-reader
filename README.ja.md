@@ -8,7 +8,7 @@ Bilingual Reader は、Web ページの本文を識別し、各段落のそば�
 
 ビルド、npm のインストール、サードパーティーのランタイムは不要です。拡張機能の画面は現在、主に簡体字中国語です。この README の各言語版は、同じ拡張機能について説明しています。
 
-[Web サイト](https://xuyang1996.github.io/bilingual-reader/) · [ダウンロード](https://github.com/xuyang1996/bilingual-reader/releases) · [プライバシーポリシー](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [問題の報告](https://github.com/xuyang1996/bilingual-reader/issues)
+[Web サイト](https://xuyang1996.github.io/bilingual-reader/ja/) · [ダウンロード](https://github.com/xuyang1996/bilingual-reader/releases) · [プライバシーポリシー](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [問題の報告](https://github.com/xuyang1996/bilingual-reader/issues)
 
 ## 表示例
 

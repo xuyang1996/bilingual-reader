@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bilingual Reader — Traducción bilingüe de páginas web</title>
+  <meta name="description" content="Lee páginas web con el original y la traducción, párrafo a párrafo. Utiliza la API de tu propio modelo o un modelo alojado en tu equipo.">
+  <link rel="canonical" href="https://xuyang1996.github.io/bilingual-reader/es/">
+  <link rel="alternate" hreflang="en" href="https://xuyang1996.github.io/bilingual-reader/">
+  <link rel="alternate" hreflang="zh-CN" href="https://xuyang1996.github.io/bilingual-reader/zh-CN/">
+  <link rel="alternate" hreflang="ja" href="https://xuyang1996.github.io/bilingual-reader/ja/">
+  <link rel="alternate" hreflang="ko" href="https://xuyang1996.github.io/bilingual-reader/ko/">
+  <link rel="alternate" hreflang="es" href="https://xuyang1996.github.io/bilingual-reader/es/">
+  <link rel="alternate" hreflang="x-default" href="https://xuyang1996.github.io/bilingual-reader/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Bilingual Reader — Traducción bilingüe de páginas web">
+  <meta property="og:description" content="Lee páginas web con el original y la traducción, párrafo a párrafo. Utiliza la API de tu propio modelo o un modelo alojado en tu equipo.">
+  <meta property="og:url" content="https://xuyang1996.github.io/bilingual-reader/es/">
+  <meta property="og:image" content="https://xuyang1996.github.io/bilingual-reader/screenshot-bilingual.png">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+  <main>
+    <nav class="languages" aria-label="Elegir el idioma de la página">
+      <a href=".././" lang="en" hreflang="en">English</a>
+      <a href="../zh-CN/" lang="zh-CN" hreflang="zh-CN">简体中文</a>
+      <a href="../ja/" lang="ja" hreflang="ja">日本語</a>
+      <a href="../ko/" lang="ko" hreflang="ko">한국어</a>
+      <a href="../es/" lang="es" hreflang="es" aria-current="page">Español</a>
+    </nav>
+    <header>
+      <p class="meta">Extensión de Chrome · v1.4.0 · Código abierto MIT</p>
+      <h1>Bilingual Reader<span>Traducción bilingüe de páginas web</span></h1>
+      <p>Traduce el contenido de las páginas párrafo a párrafo y lee el original y la traducción juntos. Conecta la API de tu propio modelo o utiliza un modelo alojado en tu equipo.</p>
+      <nav class="actions" aria-label="Enlaces del proyecto">
+        <a href="https://github.com/xuyang1996/bilingual-reader/blob/main/README.es.md">Código fuente e instalación</a>
+        <a href="https://github.com/xuyang1996/bilingual-reader/releases">Descargar extensión</a>
+        <a href="../privacy.html">Política de privacidad (chino)</a>
+        <a href="https://github.com/xuyang1996/bilingual-reader/issues">Informar de un problema</a>
+      </nav>
+    </header>
+    <figure>
+      <img src="../screenshot-bilingual.png" alt="Texto de una página en inglés junto a su traducción al chino, párrafo a párrafo" width="1280" height="800" decoding="async">
+      <figcaption>Ejemplo de lectura bilingüe. La interfaz de la extensión está actualmente, en su mayor parte, en chino simplificado.</figcaption>
+    </figure>
+    <p class="notice">La versión para Chrome Web Store se ha enviado a revisión y está configurada para publicarse automáticamente tras su aprobación. Por ahora puedes descargarla e instalarla desde GitHub Releases.</p>
+    <section aria-labelledby="get-started">
+      <h2 id="get-started">Primeros pasos</h2>
+      <ol>
+        <li>Descarga el paquete de la extensión desde GitHub Releases y descomprímelo. Abre la página de extensiones de Chrome, activa el Modo de desarrollador y carga la carpeta descomprimida que contiene manifest.json.</li>
+        <li>Abre los ajustes de la extensión. En Motores de traducción (翻译引擎), añade un proveedor e introduce la URL de la API, el modelo y tu clave. Prueba la conexión y guarda el motor.</li>
+        <li>Abre una página normal y pulsa Traducir esta página (翻译此页), o utiliza Alt+T. Alterna entre vista bilingüe, solo traducción o solo original, y restaura la página cuando quieras.</li>
+      </ol>
+    </section>
+    <section aria-labelledby="demo">
+      <h2 id="demo">Pruébalo primero</h2>
+      <p>Sin clave de API: Ajustes → Motores de traducción (翻译引擎) → añade el modo de demostración (演示模式（本地示例，无需 Key）) → guarda. Después abre la <a href="../demo.html">página de demostración en inglés</a> e inicia la traducción. Este modo utiliza un diccionario local para mostrar el diseño y los controles; no representa la calidad de una traducción automática real.</p>
+    </section>
+    <section aria-labelledby="privacy">
+      <h2 id="privacy">Cómo se tratan tus datos</h2>
+      <p>El desarrollador no opera un servidor que reciba el texto de las páginas ni tus claves. La traducción real envía el texto procesado, las instrucciones y los datos de autenticación directamente al servicio de modelos que configures. Las reglas de enmascaramiento no garantizan identificar todos los datos sensibles. Consulta la <a href="../privacy.html">política de privacidad completa (chino)</a>.</p>
+    </section>
+    <footer aria-labelledby="credits">
+      <h2 id="credits">Inspiración y agradecimientos</h2>
+      <p class="muted">Este proyecto se inspira en <a href="https://immersivetranslate.com/">Immersive Translate</a>. Sus estilos de traducción utilizan instrucciones de escenarios del repositorio público <a href="https://github.com/immersive-translate/prompts">immersive-translate/prompts</a>, adaptadas a las necesidades de este proyecto. Gracias al equipo de Immersive Translate y a quienes contribuyeron a las instrucciones.</p>
+    </footer>
+  </main>
+</body>
+</html>

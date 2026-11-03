@@ -8,7 +8,7 @@ Bilingual Reader es una extensión de Chrome que identifica el contenido de una 
 
 No necesita compilación, instalación con npm ni un entorno de ejecución de terceros. La interfaz de la extensión está actualmente, en su mayor parte, en chino simplificado; estas traducciones del README describen la misma extensión.
 
-[Sitio web](https://xuyang1996.github.io/bilingual-reader/) · [Descargas](https://github.com/xuyang1996/bilingual-reader/releases) · [Política de privacidad](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [Informar de un problema](https://github.com/xuyang1996/bilingual-reader/issues)
+[Sitio web](https://xuyang1996.github.io/bilingual-reader/es/) · [Descargas](https://github.com/xuyang1996/bilingual-reader/releases) · [Política de privacidad](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [Informar de un problema](https://github.com/xuyang1996/bilingual-reader/issues)
 
 ## Vista previa
 
