@@ -6,23 +6,27 @@ Updated: 2026-11-04 (Asia/Shanghai)
 
 - Item ID: `hknjjifpobhffnapdepmclepeaholndk`
 - Dashboard: https://chrome.google.com/webstore/devconsole/fb83a780-0058-4709-be61-cea17a9209ea/hknjjifpobhffnapdepmclepeaholndk/edit
-- Status: **Draft; not submitted for review.**
+- Status: **Submitted; pending Google compliance review.** The dashboard explicitly confirmed submission.
+- Automatically publish after approval: enabled.
+- Public listing is not live yet; review and approval remain with Google.
 - Uploaded: v1.4.0 ZIP, icon, 5 screenshots, small promotional tile, marquee tile.
 - Saved: Chinese description, Tools category, Chinese (China) language, homepage/support URLs, single purpose, permissions justifications, no-remote-code declaration, data disclosures, privacy URL and reviewer instructions.
 - Distribution observed: free, public, all regions. Existing non-trader account classification was not changed.
-- Dashboard blockers: missing verified public contact email; homepage and privacy URLs unavailable until GitHub Pages deployment.
-- Public contact email awaits account-holder confirmation; browser is at the email-entry dialog. Do not publish a personal contact email without the requested confirmation.
+- Public contact email was explicitly approved by the account holder and verified successfully.
+- Homepage, privacy policy and demo URLs returned HTTP 200; their public bytes matched committed source.
+- The all-websites host permission caused an additional-review warning, which was acknowledged before submission.
 
 ## GitHub
 
 - Public repository created: https://github.com/xuyang1996/bilingual-reader
-- Local origin is configured; repository is still empty remotely.
-- GitHub CLI device login is waiting for the account holder to complete GitHub second-factor authentication in the Chrome tab titled Confirm access.
-- Do not claim source was pushed or Pages deployed until verified.
-- Ready locally: docs/index.html, docs/privacy.html, docs/demo.html, docs/.nojekyll.
-- Intended Pages URL: https://xuyang1996.github.io/bilingual-reader/
-- Intended privacy URL: https://xuyang1996.github.io/bilingual-reader/privacy.html
-- After authentication: push main, enable Pages from main /docs, verify public HTTPS URLs, publish v1.4.0 release assets, then finish Chrome submission.
+- Source and history were pushed to main; public visibility and remote commit were verified.
+- GitHub login and second-factor authentication completed successfully.
+- GitHub Pages source: main /docs; HTTPS enforced; deployment verified as built.
+- Published files: docs/index.html, docs/privacy.html, docs/demo.html, docs/.nojekyll.
+- Live Pages URL: https://xuyang1996.github.io/bilingual-reader/
+- Live privacy URL: https://xuyang1996.github.io/bilingual-reader/privacy.html
+- Release downloads: https://github.com/xuyang1996/bilingual-reader/releases/tag/v1.4.0
+- Future source pushes to main automatically rebuild the Pages site.
 
 ## Validation performed
 

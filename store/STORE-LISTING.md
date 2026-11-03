@@ -107,3 +107,7 @@ Source: https://github.com/xuyang1996/bilingual-reader
 ## 变更记录
 
 2026-11-04：准备 v1.4.0 首次公开发布，补齐 GitHub 项目链接与 Pages 资源，修正文案中的数据流及演示模式验证步骤。扩展运行代码未变更。
+
+## 实际提交状态
+
+2026-11-04：v1.4.0 已提交 Chrome 应用商店，后台状态为「待审核」，已启用审核通过后自动发布。联系邮箱已验证；GitHub Pages 的主页、隐私政策、演示页均已公开可访问。商店 ID：`hknjjifpobhffnapdepmclepeaholndk`。
