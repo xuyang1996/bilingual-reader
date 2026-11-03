@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bilingual Reader — 大模型接口自测台</title>
+  <style>
+    :root {
+      --bg: #f6f8fa; --card: #fff; --fg: #1f2328; --muted: #656d76;
+      --border: #d0d7de; --accent: #0b6bcb; --accent-soft: #ddf4ff;
+      --ok: #1a7f37; --danger: #d1242f; --code: #f6f8fa;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117; --card: #161b22; --fg: #e6edf3; --muted: #9198a1;
+        --border: #3d444d; --accent: #4493f8; --accent-soft: #16324f;
+        --ok: #3fb950; --danger: #f85149; --code: #0d1117;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0 0 60px;
+      background: var(--bg); color: var(--fg);
+      font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 16px 24px; background: var(--card); border-bottom: 1px solid var(--border);
+    }
+    header .logo {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: linear-gradient(135deg, #0b6bcb, #45b0ff); flex: none;
+    }
+    header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+    header .sub { color: var(--muted); font-size: 12.5px; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 22px 24px; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 20px; margin-bottom: 18px;
+    }
+    .card h2 { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; }
+    .card p.desc { margin: 0 0 14px; color: var(--muted); font-size: 12.5px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    label.field { display: block; margin-bottom: 12px; }
+    label.field > span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    input, select, textarea {
+      width: 100%; font: inherit; padding: 7px 9px;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: var(--code); color: var(--fg);
+    }
+    textarea { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+    button {
+      font: inherit; padding: 7px 14px; border: 1px solid var(--border);
+      border-radius: 6px; background: var(--card); color: var(--fg); cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .bar { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+    .bar .spacer { margin-left: auto; }
+    .hint { color: var(--muted); font-size: 12px; }
+    pre {
+      background: var(--code); border: 1px solid var(--border); border-radius: 8px;
+      padding: 11px 13px; overflow: auto; font-size: 12px; line-height: 1.55;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      white-space: pre-wrap; word-break: break-word; max-height: 340px;
+    }
+    .verdict { padding: 10px 13px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .verdict.ok { background: rgba(26,127,55,.1); color: var(--ok); border: 1px solid rgba(26,127,55,.35); }
+    .verdict.bad { background: rgba(209,36,47,.1); color: var(--danger); border: 1px solid rgba(209,36,47,.35); }
+    .kv { display: grid; grid-template-columns: 96px 1fr; gap: 6px 12px; font-size: 12.5px; margin-bottom: 12px; }
+    .kv b { color: var(--muted); font-weight: 500; }
+    .kv code { font-family: ui-monospace, Menlo, monospace; word-break: break-all; }
+    details > summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+    .note {
+      background: var(--accent-soft); border-radius: 8px; padding: 11px 13px;
+      font-size: 12.5px; line-height: 1.6; margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"></div>
+    <h1>大模型接口自测台</h1>
+    <span class="sub">填好接口信息，直接看它到底发了什么、收到了什么</span>
+  </header>
+
+  <div class="wrap">
+    <div class="note">
+      这个页面用扩展里的<b>同一套引擎内核</b>发真实请求。填上你在设置页准备用的配置，
+      点「发送测试请求」，就能看到最终 URL、请求体、原始响应与解析出的译文——
+      排查「为什么我配的接口不工作」时比反复点设置页的「测试连接」快得多。
+    </div>
+
+    <div class="card">
+      <h2>接口配置</h2>
+      <p class="desc">这些字段和设置页「翻译引擎」卡片里的一一对应。</p>
+      <div class="grid">
+        <label class="field">
+          <span>接口格式</span>
+          <select id="format">
+            <option value="openai">OpenAI 兼容</option>
+            <option value="anthropic">Anthropic Messages</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="custom">自定义</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>鉴权方式</span>
+          <select id="auth">
+            <option value="auto">自动（Bearer → x-api-key → api-key）</option>
+            <option value="bearer">Bearer</option>
+            <option value="x-api-key">x-api-key</option>
+            <option value="api-key">api-key</option>
+            <option value="query">URL 参数（?key=…）</option>
+            <option value="none">无</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid">
+        <label class="field"><span>Base URL</span><input id="baseUrl" placeholder="https://api.deepseek.com/v1"></label>
+        <label class="field"><span>接口路径（留空自动）</span><input id="path" placeholder="/chat/completions"></label>
+        <label class="field"><span>模型</span><input id="model" placeholder="deepseek-chat"></label>
+        <label class="field"><span>API Key</span><input id="key" type="password" placeholder="sk-..."></label>
+      </div>
+      <label class="field">
+        <span>响应字段路径（留空 = 自动在常见结构里找）</span>
+        <input id="responsePath" placeholder="choices.0.message.content">
+      </label>
+      <label class="field">
+        <span>要翻译的文本</span>
+        <textarea id="probe" rows="2">Hello world</textarea>
+      </label>
+      <label class="field">
+        <span>翻译风格场景</span>
+        <select id="scenario"></select>
+      </label>
+      <div class="bar">
+        <button class="primary" id="send">发送测试请求</button>
+        <button id="fillDeepseek">填入 DeepSeek 示例</button>
+        <button id="fillOllama">填入 Ollama 示例</button>
+        <span class="spacer"></span>
+        <span class="hint" id="hint"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>结果</h2>
+      <div id="verdict"></div>
+      <div class="kv">
+        <b>最终 URL</b><code id="outUrl">—</code>
+        <b>HTTP 状态</b><code id="outStatus">—</code>
+        <b>解析结果</b><code id="outParsed">—</code>
+      </div>
+      <details open>
+        <summary>请求头与请求体</summary>
+        <pre id="outReq">—</pre>
+      </details>
+      <details>
+        <summary>原始响应</summary>
+        <pre id="outRaw">—</pre>
+      </details>
+      <details>
+        <summary>系统提示词</summary>
+        <pre id="outPrompt">—</pre>
+      </details>
+    </div>
+  </div>
+
+  <script src="../src/shared/defaults.js"></script>
+  <script src="../src/shared/utils.js"></script>
+  <script src="../src/shared/prompts.js"></script>
+  <script src="../src/core/glossary.js"></script>
+  <script src="../src/background/engines.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var IMT = globalThis.IMT;
+      var E = IMT.engines;
+      var I = E._internal;
+
+      function $(id) { return document.getElementById(id); }
+
+      function fillScenarios() {
+        var sel = $('scenario');
+        sel.innerHTML = '';
+        IMT.PROMPT_SCENARIOS.forEach(function (s) {
+          var o = document.createElement('option');
+          o.value = s.id;
+          o.textContent = s.name;
+          sel.appendChild(o);
+        });
+        sel.value = 'general';
+      }
+
+      function currentEngine() {
+        return {
+          id: 'probe', name: 'probe', type: 'ai',
+          format: $('format').value,
+          auth: $('auth').value,
+          baseUrl: $('baseUrl').value.trim(),
+          path: $('path').value.trim(),
+          model: $('model').value.trim(),
+          key: $('key').value.trim(),
+          responsePath: $('responsePath').value.trim(),
+          timeout: 60
+        };
+      }
+
+      function setVerdict(cls, text) {
+        var v = $('verdict');
+        v.className = 'verdict ' + cls;
+        v.textContent = text;
+      }
+
+      $('fillDeepseek').addEventListener('click', function () {
+        $('format').value = 'openai';
+        $('auth').value = 'bearer';
+        $('baseUrl').value = 'https://api.deepseek.com/v1';
+        $('path').value = '/chat/completions';
+        $('model').value = 'deepseek-chat';
+        $('key').value = 'sk-your-key';
+        $('responsePath').value = '';
+      });
+
+      $('fillOllama').addEventListener('click', function () {
+        $('format').value = 'openai';
+        $('auth').value = 'none';
+        $('baseUrl').value = 'http://localhost:11434/v1';
+        $('path').value = '/chat/completions';
+        $('model').value = 'qwen3:8b';
+        $('key').value = '';
+        $('responsePath').value = '';
+      });
+
+      $('send').addEventListener('click', function () {
+        var engine = currentEngine();
+        if (!engine.baseUrl) {
+          setVerdict('bad', '请先填 Base URL');
+          return;
+        }
+
+        var urls = I.buildUrls(engine, engine.format);
+        var auths = I.buildAuths(engine);
+        $('outUrl').textContent = urls.join('\n            ');
+        $('outStatus').textContent = '请求中…';
+        $('outParsed').textContent = '—';
+        $('outRaw').textContent = '—';
+        $('hint').textContent = '请求中…';
+        $('send').disabled = true;
+
+        var spec = I.FORMATS[engine.format] || I.FORMATS.openai;
+        var body = spec.build([$('probe').value], {
+          sourceLang: 'auto', targetLang: 'zh-Hans', glossary: []
+        }, engine, false);
+        $('outReq').textContent = JSON.stringify({
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ***（自动回退时会换 x-api-key / api-key）'
+          },
+          body: body
+        }, null, 2);
+
+        var prompt = I.buildSystemPrompt({
+          sourceLang: 'auto', targetLang: 'zh-Hans', glossary: [],
+          scenario: $('scenario').value, customScenarios: {}
+        }, engine, false);
+        $('outPrompt').textContent = prompt;
+
+        E.dispatch(engine, [$('probe').value], {
+          sourceLang: 'auto', targetLang: 'zh-Hans', glossary: [],
+          scenario: $('scenario').value, customScenarios: {}
+        }).then(function (out) {
+          $('send').disabled = false;
+          $('hint').textContent = '完成';
+          $('outStatus').textContent = '200（已解析）';
+          $('outParsed').textContent = (out && out[0]) || '(空)';
+          setVerdict('ok', '✓ 解析成功，译文见上');
+        }, function (err) {
+          $('send').disabled = false;
+          $('hint').textContent = '失败';
+          $('outStatus').textContent = '—';
+          setVerdict('bad', '✗ ' + String((err && err.message) || err));
+          $('outRaw').textContent = (err && err.body) ? String(err.body) : '(没有响应体)';
+        });
+      });
+
+      fillScenarios();
+    })();
+  </script>
+</body>
+</html>

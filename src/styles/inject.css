@@ -1,0 +1,113 @@
+/*!
+ * Bilingual Reader — 译文注入样式
+ *
+ * 所有选择器均以 imtl- 前缀命名，避免与网页自身样式冲突。
+ * 模式切换完全依赖 <html> 上的 class，不做任何 DOM 重写。
+ */
+
+:root {
+  --imtl-trans-color: #0b6bcb;
+  --imtl-trans-spacing: 8px;
+  --imtl-trans-font-size: inherit;
+  --imtl-trans-line-height: 1.7;
+  --imtl-trans-font-weight: normal;
+  --imtl-trans-opacity: 0.92;
+  --imtl-pending-color: #8a8f98;
+}
+
+/* ---------- 原文 ---------- */
+
+.imtl-original {
+  display: inline;
+}
+
+/* ---------- 译文 ---------- */
+
+.imtl-translation {
+  display: block;
+  margin-top: calc(var(--imtl-trans-spacing) * 0.5);
+  color: var(--imtl-trans-color);
+  font-size: var(--imtl-trans-font-size);
+  font-weight: var(--imtl-trans-font-weight);
+  line-height: var(--imtl-trans-line-height);
+  opacity: var(--imtl-trans-opacity);
+  font-family: inherit;
+  text-align: inherit;
+  word-break: break-word;
+}
+
+/* 译文里若含链接，保持可点击 */
+.imtl-translation a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* 演示模式的译文：淡黄色底纹，提示这不是真实翻译 */
+.imtl-translation[data-imtl-demo="1"] {
+  background: rgba(191, 135, 0, 0.09);
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px rgba(191, 135, 0, 0.09);
+}
+
+/* ---------- 模式切换 ---------- */
+
+/* 仅显示译文：隐藏原文 */
+html.imtl-mode-translation .imtl-original {
+  display: none !important;
+}
+
+/* 仅显示原文：隐藏译文 */
+html.imtl-mode-original .imtl-translation {
+  display: none !important;
+}
+
+/* ---------- 翻译中 ---------- */
+
+.imtl-pending > .imtl-original {
+  opacity: 0.55;
+}
+
+.imtl-pending > .imtl-original::after {
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-left: 0.45em;
+  vertical-align: -0.1em;
+  border: 2px solid var(--imtl-pending-color);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: imtl-spin 0.8s linear infinite;
+}
+
+@keyframes imtl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- 失败 ---------- */
+
+.imtl-error {
+  outline: 1px dashed rgba(209, 36, 47, 0.55);
+  outline-offset: 2px;
+}
+
+.imtl-error > .imtl-original {
+  text-decoration: underline wavy rgba(209, 36, 47, 0.45);
+  text-underline-offset: 3px;
+}
+
+/* ---------- 悬停高亮原文，便于与译文对照 ---------- */
+
+.imtl-block:hover > .imtl-original {
+  background-color: rgba(255, 213, 0, 0.22);
+  border-radius: 3px;
+}
+
+/* ---------- 避免影响网页自身的 font 元素 ---------- */
+
+font.imtl-original,
+font.imtl-translation {
+  font-family: inherit;
+}

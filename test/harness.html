@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bilingual Reader — 单元测试</title>
+  <link rel="stylesheet" href="../src/styles/inject.css">
+  <style>
+    body {
+      margin: 0;
+      font: 15px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+      color: #1f2328;
+      background: #f6f8fa;
+    }
+    .panel {
+      position: sticky; top: 0; z-index: 20;
+      background: #161b22; color: #e6edf3;
+      padding: 14px 20px;
+      border-bottom: 1px solid #30363d;
+    }
+    .panel h1 { margin: 0 0 4px; font-size: 15px; }
+    .panel .sub { color: #9198a1; font-size: 12px; margin-bottom: 10px; }
+    .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button {
+      font: inherit; font-size: 13px;
+      padding: 5px 12px; border-radius: 6px; cursor: pointer;
+      border: 1px solid #30363d; background: #21262d; color: #e6edf3;
+    }
+    button:hover { border-color: #4493f8; }
+    button.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; font-weight: 600; }
+    #summary { margin-left: auto; font-size: 13px; font-weight: 600; }
+    #summary.pass { color: #3fb950; }
+    #summary.fail { color: #f85149; }
+    #results { margin-top: 10px; max-height: 220px; overflow: auto; font-size: 12.5px; }
+    .res { padding: 2px 0; border-bottom: 1px solid #21262d; }
+    .res .tag { font-weight: 700; margin-right: 6px; }
+    .res.ok .tag { color: #3fb950; }
+    .res.no .tag { color: #f85149; }
+    .res .name { color: #e6edf3; }
+    .res .info { color: #9198a1; }
+    .stage { display: none; }
+    .stage.on { display: block; }
+    .article {
+      max-width: 760px; margin: 24px auto 60px; padding: 28px 34px;
+      background: #fff; border: 1px solid #d0d7de; border-radius: 10px;
+    }
+    .article h1 { font-size: 27px; margin: 0 0 6px; }
+    .article .subtitle { color: #57606a; font-size: 16px; margin: 0 0 20px; }
+    .article h2 { font-size: 20px; margin: 26px 0 8px; }
+    .article table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+    .article th, .article td { border: 1px solid #d0d7de; padding: 7px 10px; text-align: left; }
+    .article th { background: #f6f8fa; }
+    .article pre { background: #f6f8fa; padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 13px; }
+    .article blockquote { margin: 14px 0; padding: 4px 16px; border-left: 3px solid #d0d7de; color: #57606a; }
+  </style>
+</head>
+<body>
+
+<div class="panel">
+  <h1>Bilingual Reader — 单元测试</h1>
+  <div class="sub">全部逻辑在真实 DOM 上运行，翻译由内置 mock 提供，不依赖网络。</div>
+  <div class="bar">
+    <button class="primary" id="runAll">运行全部测试</button>
+    <button id="runTranslate">翻译示例文章</button>
+    <button id="restore">还原</button>
+    <button id="toggleMode">切换模式</button>
+    <span id="summary">未运行</span>
+  </div>
+  <div id="results"></div>
+</div>
+
+<!-- ============ 被测样例（严格独立于测试面板） ============ -->
+<div class="stage on" id="stage">
+  <div class="article" id="article">
+    <h1 id="t-title">Bilingual Reader</h1>
+    <p class="subtitle" id="t-sub">A paragraph-level translation engine for the web</p>
+
+    <p id="t-p1">This extension translates web pages into a bilingual layout. Every paragraph is paired with its translation so you can read the original text and the translated text at the same time.</p>
+
+    <h2 id="t-h2">How it works</h2>
+
+    <p id="t-p2">The extension scans the page and decides which blocks are real article content. Navigation menus, sidebars, footers and short labels are skipped automatically because they carry little meaning out of context.</p>
+
+    <ul id="t-ul">
+      <li id="t-li1">Paragraph level bilingual layout</li>
+      <li id="t-li2">Lazy translation triggered by scrolling</li>
+      <li id="t-li3">Personal information masking before the request</li>
+    </ul>
+
+    <table id="t-table">
+      <thead>
+        <tr><th id="t-th1">Feature</th><th id="t-th2">Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td id="t-td1">Bilingual rendering</td><td id="t-td2">Enabled</td></tr>
+        <tr><td id="t-td3">Terminology base</td><td id="t-td4">Supported</td></tr>
+      </tbody>
+    </table>
+
+    <blockquote id="t-quote">Reading two languages side by side is a very effective way to learn a new language.</blockquote>
+
+    <p id="t-p3">Install the extension from the extensions page, then reload the target page. Click the toolbar icon and choose translate. The keyboard shortcut works as well.</p>
+
+    <pre id="t-pre"><code>chrome.runtime.sendMessage({ type: 'IMT_TRANSLATE', texts: ['Hello world'] });</code></pre>
+  </div>
+
+  <aside id="t-aside">
+    <p id="t-aside-p">This sidebar contains a short navigation label that should be skipped by the recognizer.</p>
+    <p id="t-aside-short">Docs</p>
+  </aside>
+
+  <!-- 站点框架：导航条整体排除 -->
+  <nav id="t-nav">
+    <a href="#">Home</a>
+    <a href="#">Docs</a>
+    <a href="#">Blog</a>
+    <a href="#">About</a>
+  </nav>
+
+  <!-- 链接密集容器：只排除链接型条目，同容器里的标题保留 -->
+  <div id="t-header">
+    <h2 id="t-header-h2">Section title</h2>
+    <ul id="t-header-list">
+      <li id="t-header-li1"><a href="#">Alpha</a></li>
+      <li id="t-header-li2"><a href="#">Beta</a></li>
+      <li id="t-header-li3"><a href="#">Gamma</a></li>
+      <li id="t-header-li4"><a href="#">Delta</a></li>
+    </ul>
+  </div>
+</div>
+
+<script src="../src/shared/defaults.js"></script>
+<script src="../src/shared/utils.js"></script>
+<script src="../src/shared/prompts.js"></script>
+<script src="../src/core/rules.js"></script>
+<script src="../src/core/segment.js"></script>
+<script src="../src/core/render.js"></script>
+<script src="../src/core/pii.js"></script>
+<script src="../src/core/glossary.js"></script>
+<script src="../src/core/pipeline.js"></script>
+<!-- 引擎实现是后台脚本，但它不依赖 chrome.* API，可以在测试页里直接做单元断言 -->
+<script src="../src/background/engines.js"></script>
+
+<!-- mock Chrome API：让 content.js 能在普通网页里跑起来并被测试 -->
+<script>
+  window.__imtlListeners = [];
+  window.chrome = {
+    runtime: {
+      lastError: null,
+      id: 'test-extension',
+      onMessage: {
+        addListener: function (fn) { window.__imtlListeners.push(fn); }
+      },
+      sendMessage: function (msg, cb) {
+        if (msg && msg.type === 'IMT_TRANSLATE') {
+          if (cb) cb({ ok: true, texts: (msg.texts || []).map(function (t) { return 'MOCK:' + t; }) });
+          return;
+        }
+        if (cb) cb({ ok: true });
+      },
+      getURL: function (p) { return p; }
+    },
+    storage: {
+      local: {
+        get: function (key, cb) { if (cb) cb({}); },
+        set: function (obj, cb) { if (cb) cb(); }
+      }
+    }
+  };
+</script>
+<script src="../src/content/content.js"></script>
+<script src="harness.js"></script>
+</body>
+</html>

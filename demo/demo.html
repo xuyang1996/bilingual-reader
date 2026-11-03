@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bilingual Reader — demo project</title>
+  <style>
+    :root { --fg: #1f2328; --muted: #59636e; --border: #d1d9e0; --bg: #ffffff; --soft: #f6f8fa; --accent: #0969da; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      color: var(--fg);
+      background: var(--bg);
+    }
+    .banner {
+      background: linear-gradient(135deg, #0969da, #218bff);
+      color: #fff;
+      padding: 14px 24px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .banner b { font-weight: 600; }
+    .banner code { background: rgba(255,255,255,.18); padding: 2px 6px; border-radius: 4px; }
+    .wrap { max-width: 1012px; margin: 0 auto; padding: 32px 32px 80px; }
+    .repohead { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; }
+    .repohead .path { font-size: 20px; font-weight: 400; }
+    .repohead .path a { color: var(--accent); text-decoration: none; }
+    .badges { margin: 12px 0 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      display: inline-block; padding: 2px 9px; border-radius: 20px;
+      font-size: 12px; font-weight: 500; border: 1px solid var(--border); color: var(--muted);
+    }
+    .badge.blue { background: #ddf4ff; border-color: #b6e3ff; color: #0969da; }
+    .badge.green { background: #dafbe1; border-color: #aceebb; color: #1a7f37; }
+    h1 { font-size: 2em; padding-bottom: .3em; margin: 0 0 16px; border-bottom: 1px solid var(--border); }
+    h2 { font-size: 1.5em; padding-bottom: .3em; margin: 24px 0 16px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.25em; margin: 24px 0 16px; }
+    p, ul, ol, table, pre { margin: 0 0 16px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      background: var(--soft); padding: .2em .4em; border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 85%;
+    }
+    pre {
+      background: var(--soft); padding: 16px; border-radius: 6px; overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace; font-size: 85%; line-height: 1.45;
+    }
+    pre code { background: none; padding: 0; font-size: 100%; }
+    table { border-collapse: collapse; display: block; width: max-content; max-width: 100%; overflow: auto; }
+    th, td { border: 1px solid var(--border); padding: 6px 13px; }
+    th { background: var(--soft); font-weight: 600; }
+    tr:nth-child(2n) td { background: var(--soft); }
+    blockquote {
+      margin: 0 0 16px; padding: 0 1em; color: var(--muted);
+      border-left: .25em solid var(--border);
+    }
+    .toc {
+      background: var(--soft); border: 1px solid var(--border); border-radius: 6px;
+      padding: 16px 20px; margin-bottom: 24px;
+    }
+    .toc ul { margin: 0; padding-left: 22px; }
+    .foot {
+      margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);
+      color: var(--muted); font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="banner">
+  <b>Demo page</b>
+  <span>This page is a normal English web page. Load the extension, then click the toolbar icon and press <code>Translate this page</code> to get the bilingual layout.</span>
+</div>
+
+<div class="wrap">
+  <div class="repohead">
+    <div class="path"><a href="#">bilingual-reader</a> / <a href="#">demo</a> / <a href="#">README.md</a></div>
+  </div>
+
+  <div class="badges">
+    <span class="badge blue">Chrome MV3</span>
+    <span class="badge green">no build step</span>
+    <span class="badge">zero dependency</span>
+    <span class="badge">MIT licensed</span>
+  </div>
+
+  <h1>Bilingual Reader</h1>
+
+  <p>A paragraph level bilingual translation engine for the web. The extension reads the page, decides which blocks are real article content, and renders the translation right underneath the original paragraph.</p>
+
+  <div class="toc">
+    <strong>Table of contents</strong>
+    <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#install">Installation</a></li>
+      <li><a href="#usage">Usage</a></li>
+      <li><a href="#engines">Translation engines</a></li>
+      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </div>
+
+  <h2 id="features">Features</h2>
+
+  <ul>
+    <li>Paragraph level bilingual layout, including headings, table cells and list items</li>
+    <li>Smart content recognition that skips navigation menus, sidebars and short labels</li>
+    <li>Lazy translation, so only the visible part of a long page is sent to the engine</li>
+    <li>Incremental translation for content that is loaded dynamically</li>
+    <li>Personal information masking before the request, restored locally afterwards</li>
+    <li>A terminology base that keeps your product names consistent</li>
+    <li>Free engine out of the box, or bring your own key for an AI engine</li>
+  </ul>
+
+  <h2 id="install">Installation</h2>
+
+  <p>Download the folder, then open the extensions page in Chrome:</p>
+
+  <pre><code>chrome://extensions
+# enable "Developer mode"
+# click "Load unpacked" and select the bilingual-reader folder</code></pre>
+
+  <p>Reload any page and the toolbar icon becomes available.</p>
+
+  <h2 id="usage">Usage</h2>
+
+  <table>
+    <thead>
+      <tr><th>Action</th><th>How</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Translate the current page</td><td>Click the toolbar icon, then press the main button</td></tr>
+      <tr><td>Toggle translation</td><td><code>Alt</code> + <code>T</code></td></tr>
+      <tr><td>Show translation only</td><td>Popup, then <em>Translation only</em></td></tr>
+      <tr><td>Restore the original page</td><td>Popup, then <em>Restore</em></td></tr>
+      <tr><td>Translate from the context menu</td><td>Right click the page and pick an entry</td></tr>
+    </tbody>
+  </table>
+
+  <blockquote>
+    Restoring the page removes every injected node and restores the DOM exactly as it was before translation.
+  </blockquote>
+
+  <h2 id="engines">Translation engines</h2>
+
+  <p>
+    The extension talks to large-model APIs only. Pick an engine in
+    <strong>Settings → Translation engines</strong>, fill in the address, model and API key,
+    and you are done. No engine is pre-configured, and there is no key-free free tier.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Engine</th><th>Type</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>OpenAI compatible</td><td>BYOK</td><td>DeepSeek, Kimi, Qwen, Zhipu, OpenRouter, Ollama</td></tr>
+      <tr><td>Anthropic</td><td>BYOK</td><td>Claude models</td></tr>
+      <tr><td>Gemini</td><td>BYOK</td><td>Google Gemini models</td></tr>
+      <tr><td>Fully custom</td><td>BYOK</td><td>Your own gateway: URL, path, headers, body, response field path</td></tr>
+      <tr><td>Local (Ollama / vLLM / LM Studio)</td><td>No key</td><td>Set the auth mode to “None”</td></tr>
+    </tbody>
+  </table>
+
+  <h3>DeepSeek example</h3>
+
+  <pre><code>{
+  "id": "deepseek",
+  "baseUrl": "https://api.deepseek.com",
+  "model": "deepseek-chat",
+  "key": "sk-xxxxxxxxxxxxxxxx"
+}</code></pre>
+
+  <h2 id="privacy">Privacy</h2>
+
+  <p>Email addresses, phone numbers, credit card numbers, identity numbers, IP addresses and URLs are replaced with placeholders before the text leaves the browser, and restored locally when the translation comes back. API keys are stored in <code>chrome.storage.local</code> and never leave your machine.</p>
+
+  <h2 id="faq">FAQ</h2>
+
+  <h3>Why is a paragraph not translated?</h3>
+
+  <p>The recognizer skips blocks that are too short, code samples, navigation labels and sidebars. You can lower the thresholds in the settings page.</p>
+
+  <h3>Can I change the way the translation looks?</h3>
+
+  <p>Yes. The settings page exposes the font size, line height, spacing and the order of the original and the translation.</p>
+
+  <h3>Does it work on sites that render with JavaScript?</h3>
+
+  <p>Yes. The content script runs after the page is ready and observes the DOM, so dynamically inserted paragraphs are translated as well.</p>
+
+  <div class="foot">
+    <p>Released under the MIT License. This page only exists to demonstrate the translation layout.</p>
+  </div>
+</div>
+
+</body>
+</html>

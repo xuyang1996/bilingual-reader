@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bilingual Reader — 设置</title>
+  <style>
+    :root {
+      --bg: #f6f8fa;
+      --card: #ffffff;
+      --fg: #1f2328;
+      --muted: #656d76;
+      --border: #d0d7de;
+      --accent: #0b6bcb;
+      --accent-soft: #ddf4ff;
+      --danger: #d1242f;
+      --ok: #1a7f37;
+      --radius: 10px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --fg: #e6edf3;
+        --muted: #9198a1;
+        --border: #3d444d;
+        --accent: #4493f8;
+        --accent-soft: #16324f;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0 0 60px;
+      background: var(--bg);
+      color: var(--fg);
+      font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 24px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+    }
+    header .logo {
+      width: 26px; height: 26px; border-radius: 7px;
+      background: linear-gradient(135deg, #0b6bcb, #45b0ff);
+      flex: none;
+    }
+    header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+    header .spacer { margin-left: auto; }
+    button {
+      font: inherit;
+      padding: 6px 13px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--fg);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+    button.primary:hover { filter: brightness(1.08); }
+    button.danger { color: var(--danger); border-color: rgba(209, 36, 47, 0.4); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ---------------- 布局：左侧分类导航 + 右侧内容 ---------------- */
+
+    .layout {
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+      gap: 22px;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 22px 24px 0;
+      align-items: start;
+    }
+    .sidebar {
+      position: sticky;
+      top: 76px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .sidebar button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: none;
+      padding: 8px 10px;
+      border-radius: 7px;
+      color: var(--fg);
+      font-size: 13.5px;
+    }
+    .sidebar button:hover { background: var(--bg); }
+    .sidebar button.on {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .sidebar .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border);
+      flex: none;
+    }
+    .sidebar button.on .dot { background: var(--accent); }
+    .sidebar .badge {
+      margin-left: auto;
+      min-width: 17px;
+      height: 17px;
+      padding: 0 5px;
+      border-radius: 9px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 17px;
+      text-align: center;
+    }
+    .sidebar .hint {
+      margin-top: 6px;
+      padding: 8px 10px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11.5px;
+      line-height: 1.5;
+    }
+
+    .content { min-width: 0; }
+    section.panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+    section.panel[hidden] { display: none; }
+    section.panel > h2 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    section.panel > p.desc { margin: 0 0 14px; color: var(--muted); font-size: 12.5px; }
+
+    label.field { display: block; margin-bottom: 12px; }
+    label.field > span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    input[type="text"], input[type="number"], input[type="password"], select, textarea {
+      width: 100%;
+      font: inherit;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--fg);
+    }
+    textarea { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .row label { flex: none; min-width: 96px; white-space: nowrap; }
+    .row input[type="checkbox"] { flex: none; }
+    .hint { color: var(--muted); font-size: 12px; }
+    .bar { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+    .bar .spacer { margin-left: auto; }
+    .chk-list { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+    .chk-list label { display: flex; align-items: center; gap: 5px; font-size: 13px; }
+
+    /* ---------------- 引擎卡片 ---------------- */
+
+    .engine-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .engine-card.unready { border-color: rgba(209, 36, 47, 0.45); }
+    .engine-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .engine-head h3 { margin: 0; font-size: 13.5px; font-weight: 600; }
+    .engine-head .tag {
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1px 8px;
+    }
+    .engine-head .tag.bad { color: var(--danger); border-color: rgba(209, 36, 47, 0.4); }
+    .engine-head .spacer { margin-left: auto; }
+    .engine-card details {
+      margin-top: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .engine-card summary {
+      cursor: pointer;
+      font-size: 12.5px;
+      color: var(--muted);
+      user-select: none;
+    }
+    .engine-card summary:hover { color: var(--fg); }
+    .engine-card textarea {
+      width: 100%;
+      min-height: 74px;
+      resize: vertical;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .engine-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .engine-test-result { font-size: 12px; color: var(--muted); word-break: break-all; }
+    .engine-test-result.ok { color: var(--ok); }
+    .engine-test-result.bad { color: var(--danger); }
+    .provider-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .provider-add select { flex: 1 1 260px; }
+
+    /* 「选择翻译引擎」下拉：只用来选要看哪个引擎，下面才是它的表单 */
+    .engine-picker-row { margin-bottom: 6px; }
+    .engine-picker-row select { flex: 1 1 320px; max-width: 520px; }
+    .picker-hint { margin: 0 0 14px 96px; }
+    .engine-empty {
+      padding: 26px 18px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      text-align: center;
+      background: var(--bg);
+    }
+    .engine-name-row { display: flex; align-items: center; gap: 8px; }
+    .engine-name-row input { flex: 1 1 auto; }
+    .engine-hint-inline { margin: -6px 0 12px; color: var(--muted); font-size: 11.5px; }
+
+    /* ---------------- 提示条 ---------------- */
+
+    .banner {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 11px 13px;
+      border-radius: 8px;
+      border: 1px solid rgba(209, 36, 47, 0.35);
+      background: rgba(209, 36, 47, 0.08);
+      margin-bottom: 14px;
+      font-size: 12.5px;
+      line-height: 1.55;
+    }
+    /* display:flex 会盖掉 UA 的 [hidden]{display:none}，必须显式写一条 */
+    .banner[hidden] { display: none; }
+    .banner b { color: var(--danger); }
+    .banner .spacer { margin-left: auto; }
+    .banner.ok { border-color: rgba(26, 127, 55, 0.4); background: rgba(26, 127, 55, 0.08); }
+    .banner.ok b { color: var(--ok); }
+    .banner.warn { border-color: rgba(191, 135, 0, 0.45); background: rgba(191, 135, 0, 0.08); }
+    .banner.warn b { color: #b07f00; }
+
+    input.invalid, textarea.invalid { border-color: var(--danger); }
+
+    /* ---------------- 场景（翻译风格） ---------------- */
+
+    .scenario-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .scenario-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--bg);
+    }
+    .scenario-item:hover { border-color: var(--accent); }
+    .scenario-item.on { border-color: var(--accent); background: var(--accent-soft); }
+    .scenario-item .radio {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid var(--border);
+      flex: none; margin-top: 3px;
+    }
+    .scenario-item.on .radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 2px var(--accent-soft); }
+    .scenario-item .body { min-width: 0; }
+    .scenario-item .nm { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .scenario-item .ds { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .chip {
+      font-size: 10.5px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0 7px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .chip.custom { color: var(--accent); border-color: var(--accent); }
+    .chip.edited { color: var(--danger); border-color: rgba(209, 36, 47, 0.45); }
+
+    /* 选中场景的表单：直接跟在那一项下面 */
+    .scenario-editor {
+      width: 100%;
+      margin: -2px 0 8px 24px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      background: var(--bg);
+    }
+    .scenario-editor[hidden] { display: none; }
+    .scenario-editor-title {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .scenario-editor-title b { color: var(--fg); }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      background: var(--fg);
+      color: var(--bg);
+      padding: 9px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+      z-index: 50;
+    }
+    .toast.show { opacity: 1; }
+    .err-text { color: var(--danger); font-size: 12px; margin-top: 6px; min-height: 15px; }
+    .stat { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
+    code.k { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 12px; }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; flex-direction: row; overflow-x: auto; }
+      .sidebar button { width: auto; white-space: nowrap; }
+      .sidebar .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"></div>
+    <h1>Bilingual Reader 设置</h1>
+    <span class="spacer"></span>
+    <button id="export">导出配置</button>
+    <button id="import">导入配置</button>
+    <button class="primary" id="saveAll">保存全部</button>
+    <input type="file" id="fileInput" accept="application/json" hidden>
+  </header>
+
+  <div class="layout">
+    <!-- ---------------- 左侧分类导航 ---------------- -->
+    <nav class="sidebar" id="sidebar">
+      <button data-panel="engines"><span class="dot"></span>翻译引擎<span class="badge" id="badgeEngines" hidden>!</span></button>
+      <button data-panel="style"><span class="dot"></span>翻译风格</button>
+      <button data-panel="detect"><span class="dot"></span>正文识别</button>
+      <button data-panel="display"><span class="dot"></span>译文样式</button>
+      <button data-panel="rules"><span class="dot"></span>站点规则</button>
+      <button data-panel="glossary"><span class="dot"></span>术语库</button>
+      <button data-panel="privacy"><span class="dot"></span>隐私与缓存</button>
+      <button data-panel="data"><span class="dot"></span>数据与关于</button>
+      <div class="hint">扩展只支持对接大模型 API。请先在「翻译引擎」里配好一个引擎。</div>
+    </nav>
+
+    <main class="content">
+
+      <!-- ================= 翻译引擎 ================= -->
+      <section class="panel" data-panel="engines">
+        <h2>翻译引擎</h2>
+        <p class="desc">
+          扩展只支持对接大模型 API。先在下面挑一个引擎，再在下方填写它的地址、模型与 API Key；
+          可以配置多个引擎，随时切换。密钥仅保存在本机 <code class="k">chrome.storage.local</code>。
+        </p>
+
+        <div class="banner" id="engineBanner" hidden>
+          <div><b id="engineBannerTitle">还不能翻译。</b><span id="engineBannerText"></span></div>
+        </div>
+
+        <div class="row engine-picker-row">
+          <label>选择翻译引擎</label>
+          <select id="enginePicker"></select>
+        </div>
+        <div class="hint picker-hint" id="enginePickerHint"></div>
+
+        <div id="engineForm"></div>
+      </section>
+
+      <!-- ================= 翻译风格 ================= -->
+      <section class="panel" data-panel="style" hidden>
+        <h2>翻译风格</h2>
+        <p class="desc">
+          选一个与内容类型匹配的场景，提示词会相应调整——术语、语气、格式的处理方式都不一样。
+          默认「通用」。也可以自己写一个场景，或在内置场景的基础上改提示词。
+        </p>
+
+        <div class="row">
+          <label>自动匹配</label>
+          <input type="checkbox" id="autoScenario">
+          <span class="hint">按当前网址自动挑更贴切的场景（GitHub → GitHub，arxiv → 学术论文……）</span>
+        </div>
+
+        <div class="scenario-list" id="scenarioList"></div>
+
+        <div class="bar">
+          <button id="scenarioAdd">新增自定义场景</button>
+          <button id="scenarioReset" class="danger" hidden>删除这个自定义场景</button>
+          <span class="spacer"></span>
+          <span class="hint" id="scenarioHint"></span>
+        </div>
+
+        <!-- 选中的场景的表单：JS 会把它挪到对应选项的正下方 -->
+        <div id="scenarioEditor" class="scenario-editor" hidden>
+          <div class="scenario-editor-title">正在编辑：<b id="scenarioEditorName"></b></div>
+          <label class="field">
+            <span>场景名称</span>
+            <input type="text" id="scenarioNameInput">
+          </label>
+          <label class="field">
+            <span>场景说明</span>
+            <input type="text" id="scenarioDescInput" placeholder="一句话说明这个场景适合什么内容">
+          </label>
+          <label class="field">
+            <span>提示词（{target} 会替换成目标语言名称）</span>
+            <textarea id="scenarioPromptInput" rows="10" spellcheck="false"></textarea>
+          </label>
+          <label class="field">
+            <span>网址匹配（每行一条，支持 * 通配；命中就用这个场景）</span>
+            <textarea id="scenarioMatchesInput" rows="3" spellcheck="false" placeholder="https://example.com/*"></textarea>
+          </label>
+          <div class="err-text" id="scenarioErr"></div>
+          <div class="bar">
+            <button class="primary" id="scenarioSave">保存这个场景</button>
+            <button id="scenarioRestore" hidden>恢复内置提示词</button>
+            <span class="spacer"></span>
+            <span class="hint">留空提示词 = 只用内置通用规则</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 正文识别 ================= -->
+      <section class="panel" data-panel="detect" hidden>
+        <h2>正文识别</h2>
+        <p class="desc">阈值决定哪些段落会被当作正文翻译。数值越大，越少的内容被翻译（噪音更少）。</p>
+        <div class="grid">
+          <label class="field"><span>段落最少字符数</span><input type="number" id="paragraphMinTextCount" min="0"></label>
+          <label class="field"><span>整页正文最少字符数</span><input type="number" id="mainFrameMinTextCount" min="0"></label>
+        </div>
+        <div class="row"><label>整页翻译</label><input type="checkbox" id="translateChrome"></div>
+        <div class="hint" style="margin:-6px 0 12px 96px;">打开后连导航 / 侧栏 / 页脚一起翻；关闭则只翻正文。</div>
+        <div class="grid">
+          <label class="field"><span>正文容器选择器（留空 = 整页）</span><input type="text" id="mainSelector" placeholder="main, article, .post-content"></label>
+        </div>
+        <div class="row"><label>懒翻译</label><input type="checkbox" id="lazy"></div>
+        <div class="hint" style="margin:-6px 0 12px 96px;">滚动到才翻译，页面打开更快。</div>
+        <div class="row"><label>增量翻译</label><input type="checkbox" id="incremental"></div>
+        <div class="hint" style="margin:-6px 0 12px 96px;">动态加载出来的内容自动补翻。</div>
+        <div class="row"><label>打开页面时自动翻译</label><input type="checkbox" id="autoTranslate"></div>
+      </section>
+
+      <!-- ================= 译文样式 ================= -->
+      <section class="panel" data-panel="display" hidden>
+        <h2>译文样式</h2>
+        <p class="desc">译文的外观与摆放方式。</p>
+        <div class="grid">
+          <label class="field"><span>译文位置</span>
+            <select id="translationPosition">
+              <option value="after">原文在上，译文在下</option>
+              <option value="before">译文在上，原文在下</option>
+            </select>
+          </label>
+          <label class="field"><span>译文标签</span>
+            <select id="targetWrapperTag">
+              <option value="font">font</option>
+              <option value="span">span</option>
+              <option value="div">div</option>
+            </select>
+          </label>
+          <label class="field"><span>译文字号</span><input type="text" id="fontSize" placeholder="inherit"></label>
+          <label class="field"><span>译文行高</span><input type="text" id="lineHeight" placeholder="1.7"></label>
+          <label class="field"><span>译文间距 (px)</span><input type="number" id="spacing" min="0" max="40"></label>
+        </div>
+      </section>
+
+      <!-- ================= 站点规则 ================= -->
+      <section class="panel" data-panel="rules" hidden>
+        <h2>站点规则</h2>
+        <p class="desc">用 JSON 数组定义按站点生效的规则。规则按匹配强度排序，后匹配到的规则覆盖先前的。字段与 <code class="k">generalRule</code> 相同。</p>
+        <textarea id="rules" rows="14" spellcheck="false"></textarea>
+        <div class="err-text" id="rulesErr"></div>
+        <div class="bar">
+          <button id="rulesFormat">格式化 JSON</button>
+          <button id="rulesExample">插入示例</button>
+          <span class="spacer"></span>
+          <span class="hint" id="rulesHint"></span>
+        </div>
+      </section>
+
+      <!-- ================= 术语库 ================= -->
+      <section class="panel" data-panel="glossary" hidden>
+        <h2>术语库</h2>
+        <p class="desc">每行一条：<code class="k">英文原文&#9;中文译法</code>。术语会写进提示词，模型会照着翻。</p>
+        <textarea id="glossary" rows="10" spellcheck="false" placeholder="Chrome&#9;谷歌浏览器"></textarea>
+        <div class="bar">
+          <button id="glossaryFormat">整理格式</button>
+          <span class="spacer"></span>
+          <span class="hint" id="glossaryCount"></span>
+        </div>
+      </section>
+
+      <!-- ================= 隐私与缓存 ================= -->
+      <section class="panel" data-panel="privacy" hidden>
+        <h2>隐私：PII 脱敏</h2>
+        <p class="desc">翻译前把敏感信息替换为占位符，送回后本地还原，原始内容不会离开本机。</p>
+        <div class="row"><label>启用 PII 脱敏</label><input type="checkbox" id="piiEnabled"></div>
+        <div class="chk-list" id="piiTypes"></div>
+
+        <h2 style="margin-top:22px;">缓存</h2>
+        <p class="desc">翻译结果缓存在本机，重复访问同一页面时直接命中，不消耗额度。</p>
+        <div class="row"><label>启用缓存</label><input type="checkbox" id="cacheEnabled"></div>
+        <div class="row"><label>缓存有效期（天）</label><input type="number" id="cacheMaxAgeDay" min="1" max="365"></div>
+        <div class="bar">
+          <button id="cacheStats">查看缓存统计</button>
+          <button class="danger" id="cacheClear">清空翻译缓存</button>
+          <span class="spacer"></span>
+          <span class="stat hint" id="cacheInfo"></span>
+        </div>
+      </section>
+
+      <!-- ================= 数据与关于 ================= -->
+      <section class="panel" data-panel="data" hidden>
+        <h2>配置数据</h2>
+        <p class="desc">配置只存在本机。可以导出成 JSON 备份，或导入别人的配置。</p>
+        <div class="bar">
+          <button id="export2">导出配置</button>
+          <button id="import2">导入配置</button>
+          <span class="spacer"></span>
+        </div>
+        <div class="bar">
+          <button class="danger" id="reset">恢复默认设置</button>
+          <span class="spacer"></span>
+          <span class="hint" id="ver"></span>
+        </div>
+        <p class="desc" style="margin-top:16px;">
+          提示词场景改编自开源项目 <code class="k">immersive-translate/prompts</code>，
+          翻译风格与术语处理方式可自由自定义。
+        </p>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="../shared/defaults.js"></script>
+  <script src="../shared/utils.js"></script>
+  <script src="../shared/prompts.js"></script>
+  <script src="../core/rules.js"></script>
+  <script src="../core/glossary.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

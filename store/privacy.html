@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bilingual Reader 隐私政策</title>
+<style>
+  :root {
+    --fg: #1f2328; --muted: #656d76; --bg: #ffffff;
+    --soft: #f6f8fa; --border: #d0d7de; --accent: #0b6bcb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e6edf3; --muted:#9198a1; --bg:#0d1117; --soft:#161b22; --border:#3d444d; --accent:#4493f8; }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0 20px 80px;
+    background: var(--bg); color: var(--fg);
+    font: 15px/1.75 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 40px 0 6px; }
+  h2 { font-size: 19px; margin: 36px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; margin: 22px 0 6px; }
+  p, li { color: var(--fg); }
+  .meta { color: var(--muted); font-size: 13.5px; margin-bottom: 4px; }
+  .lead { color: var(--muted); font-size: 14px; margin: 18px 0 26px; }
+  .box {
+    background: var(--soft); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; margin: 18px 0;
+  }
+  .box b { display: block; margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 9px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  code { background: var(--soft); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  ul { padding-left: 22px; }
+  li { margin: 5px 0; }
+  .no { color: #1a7f37; font-weight: 600; }
+  .yes { color: #b07f00; font-weight: 600; }
+  footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Bilingual Reader 隐私政策</h1>
+<p class="meta">最近更新：2026 年 11 月 2 日 &nbsp;·&nbsp; 适用版本：1.4.0</p>
+
+<p class="lead">
+本政策说明 <strong>Bilingual Reader — 双语对照翻译</strong>（下称「本扩展」）在你使用过程中会处理哪些数据、
+数据会流向哪里，以及我们（扩展作者）是否会收集它们。
+</p>
+
+<div class="box">
+  <b>一句话总结</b>
+  本扩展<strong>不收集、不上传、不分析任何用户数据</strong>，也没有广告、没有统计、没有后台服务器。
+  你填写的 API Key 与所有配置<strong>只保存在你自己的浏览器本地</strong>（<code>chrome.storage.local</code>）。
+  唯一会离开你设备的数据，是你主动配置的<strong>大模型 API 服务商</strong>——这是你选择用大模型翻译的必然结果，
+  而你随时可以关掉这个扩展来停止它。
+</div>
+
+<h2>1. 我们收集哪些数据</h2>
+
+<table>
+  <tr><th>数据类型</th><th>是否收集</th><th>说明</th></tr>
+  <tr><td>个人身份信息（姓名、邮箱、电话等）</td><td class="no">不收集</td><td>扩展不收集任何个人信息。</td></tr>
+  <tr><td>浏览历史</td><td class="no">不收集</td><td>扩展不上报浏览记录、访问过的网址或使用统计。</td></tr>
+  <tr><td>网页内容（正文文本）</td><td class="no">不收集</td><td>扩展不把网页内容发给我们；它只在你点「翻译」时，把你选中的那一段正文发给你自己配置的 API 服务商（见第 3 节）。</td></tr>
+  <tr><td>用户输入的 API Key</td><td class="no">不收集</td><td>只写入本机 <code>chrome.storage.local</code>，仅用于向你的 API 服务商发起请求。</td></tr>
+  <tr><td>诊断信息 / 崩溃日志</td><td class="no">不收集</td><td>扩展不包含任何遥测或崩溃上报代码。</td></tr>
+</table>
+
+<h2>2. 本地存储了什么</h2>
+
+<p>以下数据保存在你浏览器的<strong>本地扩展存储</strong>中。它们不会离开你的设备，我们可以随时通过
+「设置 → 数据与关于 → 恢复默认设置」清空，也可以直接在浏览器扩展管理页删除本扩展来彻底移除。</p>
+
+<ul>
+  <li><strong>引擎配置</strong>：你填写的接口地址、模型名、API Key、鉴权方式、批量条数、超时等。</li>
+  <li><strong>翻译偏好</strong>：目标语言、翻译风格场景、术语库、站点规则、译文样式、阈值等设置。</li>
+  <li><strong>翻译缓存</strong>：已翻译过的段落及其译文，键为「原文 + 语向 + 引擎」的哈希值，默认保留 30 天。
+      用于避免重复请求相同内容，不含任何可识别身份的信息。</li>
+  <li><strong>会话级记忆</strong>：某个引擎上次成功的接口地址与鉴权方式（存于 <code>chrome.storage.session</code>，
+      浏览器关闭即清除），用于避免每次请求都重复试探地址。</li>
+</ul>
+
+<h2>3. 什么数据会离开你的设备，以及去哪里</h2>
+
+<p>本扩展<strong>只支持对接大模型 API</strong>（这是它的核心功能）。当你点击「翻译此页」时：</p>
+
+<ol>
+  <li>扩展识别出页面中的正文段落；</li>
+  <li>可选的 <strong>PII 脱敏</strong>会把邮箱、电话、信用卡号、身份证号、IP 地址、网址等替换成占位符
+      （默认开启，可在设置页关闭或按类型勾选）；</li>
+  <li>这些文本连同系统提示词一起，被发送到你<strong>自己在设置页填写的那个 API 地址</strong>；</li>
+  <li>返回的译文在本地还原占位符并渲染到页面上。</li>
+</ol>
+
+<p>因此，<strong>你阅读的网页正文会到达你所选择的那家大模型服务商</strong>（例如 DeepSeek、OpenAI、
+Google，或你自己部署的 Ollama / vLLM / LM Studio）。这些服务的隐私条款由它们各自负责，请以你实际使用的
+服务商公布的政策为准。我们不参与这条链路，也不是任何一方的中介。</p>
+
+<div class="box">
+  <b>如果你不希望任何内容离开本机</b><br>
+  请在设置页「翻译引擎」里选择本地部署的 <strong>Ollama / vLLM / LM Studio</strong> 预设，
+  并把「鉴权方式」设为「无」。这样请求只发往 <code>localhost</code>，正文不会离开你的电脑。
+</div>
+
+<h2>4. 扩展申请了哪些权限，为什么</h2>
+
+<table>
+  <tr><th>权限</th><th>用途</th></tr>
+  <tr><td><code>storage</code></td><td>把设置、API Key 与翻译缓存保存在本机。</td></tr>
+  <tr><td><code>contextMenus</code></td><td>提供右键菜单里的「翻译本页」「还原本页」「仅显示译文」「仅显示原文」。</td></tr>
+  <tr><td>主机权限 <code>&lt;all_urls&gt;</code></td>
+      <td>在任意网页注入内容脚本以识别正文并渲染译文。没有它，扩展无法在任何网站上工作。</td></tr>
+</table>
+
+<p>扩展不申请 <code>tabs</code>、<code>browsingData</code>、<code>cookies</code>、<code>history</code>、
+<code>webRequest</code>、<code>downloads</code> 等敏感权限，也不读取除当前活动标签页以外的标签页信息。</p>
+
+<h2>5. 数据共享与出售</h2>
+
+<p><strong>我们不出售、共享、转让或出租你的任何数据。</strong>扩展没有广告、没有数据分析 SDK、
+没有第三方脚本、也没有远程加载的代码。所有代码都打包在扩展包内，运行时不会从外部下载并执行任何脚本。</p>
+
+<h2>6. 演示模式</h2>
+
+<p>设置页的引擎列表里有一个<strong>「演示模式」</strong>。它使用扩展内置的小词表在<strong>本地</strong>
+拼出示例译文，用于让新用户在配置 API 之前先体验界面与流程。它<strong>不发起任何网络请求</strong>，
+也不需要 API Key，其输出在界面上有明确标记。<strong>演示模式不是机器翻译</strong>，
+真实翻译请配置你自己的大模型 API。</p>
+
+<h2>7. 儿童隐私</h2>
+
+<p>本扩展不收集任何数据，因而也不会收集儿童的个人信息。</p>
+
+<h2>8. 变更</h2>
+
+<p>本政策如有变更，会随扩展的新版本一同更新，并在此页标注新的更新日期。</p>
+
+<h2>9. 联系我们</h2>
+
+<p>如果你对隐私政策有任何疑问，可以直接在扩展的 GitHub 仓库提交 issue，或通过 Chrome 应用商店页面的
+「支持」链接联系作者。</p>
+
+<footer>
+  Bilingual Reader — 双语对照翻译 · 开源发布于 MIT 协议 · 本扩展不含广告与遥测
+</footer>
+
+</main>
+</body>
+</html>
