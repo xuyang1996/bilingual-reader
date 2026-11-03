@@ -34,7 +34,9 @@ def build(src, out):
             # 顶层目录一律排除（test/docs/store…），子目录按同一规则
             dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
             for f in filenames:
-                if f in EXCLUDE_FILES or f.endswith(('.pyc', '.pyo', '.swp')):
+                if (f in EXCLUDE_FILES
+                        or (f.startswith('README.') and f.endswith('.md'))
+                        or f.endswith(('.pyc', '.pyo', '.swp'))):
                     continue
                 p = os.path.join(dirpath, f)
                 # 压缩包内的路径就是相对 src 的路径 —— manifest.json 因此落在根目录
