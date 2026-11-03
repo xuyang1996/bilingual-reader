@@ -22,7 +22,7 @@ SOFTWARE.
 
 ---
 
-The translation style prompts in `src/shared/prompts.js` are adapted from the
-open-source project "immersive-translate/prompts" (MIT License).
-This project is an independent implementation and is not affiliated with or
-endorsed by that project or its author.
+Product inspiration: Immersive Translate (https://immersivetranslate.com/).
+The translation style prompts in `src/shared/prompts.js` use content from the
+public project https://github.com/immersive-translate/prompts, adapted for
+this extension. Thanks to the Immersive Translate team and prompt contributors.

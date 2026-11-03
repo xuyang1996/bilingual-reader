@@ -563,7 +563,7 @@ IMT.prompts.urlPatternToRegExp(pattern)   // 通配符 → 正则
 
 ### 4.6 翻译风格场景（`shared/prompts.js`）
 
-14 个内置场景，提示词改编自开源 `immersive-translate/prompts` 的 `aiBatch.taskSystemPrompt`。
+14 个内置场景，提示词使用了公开项目 `immersive-translate/prompts` 的 `aiBatch.taskSystemPrompt` 内容，并作了适配。
 
 每个场景结构：
 

@@ -4,7 +4,7 @@
  * 每个场景是一段「领域提示词」：告诉模型当前这段文字属于哪一类，
  * 以及这类文字特有的术语、格式与语气该怎么处理。
  *
- * 场景提示词改编自开源项目 immersive-translate/prompts（MIT 许可），
+ * 场景提示词使用了公开项目 immersive-translate/prompts 的内容，
  * 按本扩展的段落级双语对照渲染做了裁剪与改写，并补齐了「通用」场景。
  *
  * 三层优先级（在 src/background/engines.js 的 buildSystemPrompt 里合成）：

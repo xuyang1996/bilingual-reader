@@ -4,7 +4,7 @@
 
 零构建：解压后直接「加载已解压的扩展程序」即可运行，不需要 npm install，不需要打包工具，不依赖任何第三方运行时。
 
-> 本项目是依据公开技术拆解独立实现的产品，与「沉浸式翻译」无代码、无品牌关联。
+> 本项目的灵感来自 **[沉浸式翻译](https://immersivetranslate.com/)**。翻译风格使用了其公开的 **[immersive-translate/prompts](https://github.com/immersive-translate/prompts)** 中的场景提示词，并按本项目的需要做了适配。感谢沉浸式翻译团队及提示词贡献者。
 
 项目主页：[GitHub Pages](https://xuyang1996.github.io/bilingual-reader/) · [隐私政策](https://xuyang1996.github.io/bilingual-reader/privacy.html) · [下载发布包](https://github.com/xuyang1996/bilingual-reader/releases) · [反馈问题](https://github.com/xuyang1996/bilingual-reader/issues)
 
@@ -143,7 +143,7 @@ v1.4.0 起设置页不再摊开三张默认引擎表单，改成**先选、再�
 | 社交媒体 | 帖子与短文 | 语气轻快口语化，话题标签、@提及、表情符号原样保留 |
 | 简明英语 | 英语学习、难文速读 | 把复杂英文改写成通俗易懂的英语 |
 
-场景提示词改编自开源项目 **[immersive-translate/prompts](https://github.com/immersive-translate/prompts)**，按本扩展的段落级双语渲染做了裁剪与改写，并补齐了「通用」场景。
+场景提示词使用了公开项目 **[immersive-translate/prompts](https://github.com/immersive-translate/prompts)** 的内容，按本扩展的段落级双语渲染做了裁剪与改写，并补齐了「通用」场景。
 
 **按网址自动匹配**（默认开启）：打开 GitHub 就用 GitHub 场景，打开 arxiv 就用学术论文场景，命中规则见上表。也可以关掉，只用你手选的那一个。
 
