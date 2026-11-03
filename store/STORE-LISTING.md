@@ -1,316 +1,109 @@
-# Chrome 应用商店发布包 — 商店信息
-
-> 这份文件里每一条都可以**直接复制**到 Chrome Web Store 开发者后台对应字段。
-> 字段名与后台一致，审核备注（Notes for reviewer）是整份里最重要的部分。
-
----
-
-## 0. 发布前必须先做的四件事
-
-| # | 事项 | 怎么做 |
-| --- | --- | --- |
-| 1 | **注册开发者账号** | <https://chrome.google.com/webstore/devconsole>，一次性 $5 开发者费用 |
-| 2 | **把隐私政策挂到公网** | 本目录的 `privacy.html` 传到任意静态托管（GitHub Pages / Cloudflare Pages / Vercel / 自己的站点），拿到一个 **https** 链接 |
-| 3 | **上传发布包** | `bilingual-reader-store.zip`（见 §7），**manifest.json 必须在压缩包根目录** |
-| 4 | **填完本文件的字段** | 逐条复制，截图按 §6 上传 |
-
-> ⚠️ 隐私政策**必须是一个公开可访问的 URL**，本地文件、data URL 都不行。
-> 这是最常见的「被驳回后才发现要补」的项目之一。
-
----
-
-## 1. 商店详情
-
-| 后台字段 | 填写内容 |
-| --- | --- |
-| **扩展名称**（≤75 字符） | `Bilingual Reader — 双语对照翻译` |
-| **简短说明**（≤132 字符） | `段落级双语对照网页翻译。只翻正文，原文在上译文在下；支持各家大模型 API 与本地模型。` |
-| **类别** | `Productivity`（效率工具）<br>次选：`Tools`（工具） |
-| **语言** | `中文（简体）`（主语言）<br>可选追加：`English`、`中文（繁體）`、`日本語` |
-| **开发者邮箱**（公开显示） | 填你自己的邮箱 |
-| **支持网址** | 你的 GitHub 仓库地址或项目主页 |
-
-### 详细说明（≤16384 字符，可直接复制）
-
-```
-把英文网页变成一页双语对照，读原文的同时就看懂译文。
-
-Bilingual Reader 是一个「段落级双语对照」翻译扩展：它识别出页面里真正的正文，
-逐段翻译，并把译文直接排在原文下方——标题、副标题、表格单元格、列表项都在内，
-一屏就能对照着读，不用在两个页面之间来回切。
-
-▍为什么不是「整页机译」
-  市面上的翻译扩展经常把导航、侧栏、页脚、目录一起翻，噪音比译文还多。
-  本扩展用两级判定识别正文：
-  · 站点框架（导航 / 侧栏 / 页脚 / 面包屑 / 分享条…）整棵排除；
-  · 链接密集的容器（目录 / 标签云）只排除其中的链接型条目，
-    同一个容器里的正文照样翻译。
-  代码、公式、SVG、交互控件一律保持原文。
+# Chrome 应用商店发布信息
 
-▍只对接大模型 API，不做「免费翻译」
-  扩展不内置任何免 Key 的翻译通道，所有翻译都走你自己配置的大模型 API。
-  这样没有第三方中转，你的 Key 与正文不会经过任何我们控制的服务器。
+发布日期准备：2026-11-04 · 版本：1.4.0
 
-  · 内置 30 个供应商预设：OpenAI、Anthropic Claude、Google Gemini、DeepSeek、
-    Kimi、通义千问、智谱、豆包、MiniMax、百川、硅基流动、OpenRouter、Groq、
-    Together、Fireworks、xAI、Mistral、混元、千帆、魔搭、Azure OpenAI、
-    OpenAI Responses API、New API 聚合站，以及本地 Ollama / vLLM / LM Studio
-  · 「完全自定义」：地址、路径、鉴权方式、请求头、请求体、响应字段路径都能自己写，
-    足以覆盖自建网关和二次封装的聚合站
-  · 地址候选与鉴权候选自动回退：漏写 /v1、或者服务用 x-api-key 鉴权，
-    扩展会自己试出正确组合并记住，不会每次都先吃一次 404
-  · 17 条响应取值路径，兼容各家完全不同的返回结构
-  · 思维链不会混进译文（DeepSeek-R1 等推理模型）
-  · 批量协议：一次翻多条，编号对不上自动回退逐条，不会错位
-
-▍按内容类型换语气：14 个翻译风格场景
-  通用 / 科技 / 新闻 / 学术论文 / 编程文档 / GitHub / 法律 / 医疗健康 /
-  金融财经 / 电商购物 / 客服对话 / 文学小说 / 社交媒体 / 通俗英语。
-
-  · 可以开启「按网址自动匹配」：打开 GitHub 就用 GitHub 风格，打开 arxiv 就用论文风格
-  · 每个场景的提示词都能改，也能完全自己写一个
-  · 引擎卡片上还可以直接写自定义系统提示词，优先级高于场景
-
-▍术语库
-  每行写一条「英文原文 → 中文译法」，术语会写进提示词，模型照着翻；
-  译完还会再做一次强制替换兜底，产品名、专有名词前后一致。
-
-▍隐私
-  · 扩展不收集任何数据，没有广告、没有统计、没有遥测、没有后台服务器
-  · API Key 与全部设置只存在你自己的浏览器本地
-  · 可选的 PII 脱敏：邮箱、电话、卡号、身份证号、IP、网址在发出前替换为占位符，
-    返回后本地还原
-  · 想让内容完全不离开电脑，用本地 Ollama / vLLM / LM Studio 即可
-
-▍怎么用
-  1. 点工具栏图标 → 「翻译此页」
-  2. 或者按 Alt+T 快捷键，或在页面右键菜单里选「翻译本页」
-  3. 随时可以切「仅译文 / 仅原文」，或一键还原（还原后页面与翻译前完全一致）
-
-▍其它
-  · 懒翻译：长页面只有滚动到的部分才会发请求，打开很快
-  · 增量翻译：动态加载出来的内容自动补翻
-  · 译文缓存：重复访问同一页面命中缓存，不消耗额度
-  · 站点规则：可以按网址定制目标语言、显示模式、正文容器等
-  · 开源，MIT 协议
-```
-
----
-
-## 2. 隐私实践（Privacy practices）
-
-### 2.1 单一用途（Single purpose）— 必填，一句话
-
-```
-把网页正文翻译成与原文并排显示的双语对照。
-```
+## 项目链接
 
-### 2.2 数据使用披露（Data usage disclosures）
+- 源码：https://github.com/xuyang1996/bilingual-reader
+- 网站：https://xuyang1996.github.io/bilingual-reader/
+- 隐私政策：https://xuyang1996.github.io/bilingual-reader/privacy.html
+- 演示页：https://xuyang1996.github.io/bilingual-reader/demo.html
+- 支持：https://github.com/xuyang1996/bilingual-reader/issues
 
-后台「隐私」标签页里的每一项都按下面填：
-
-| 后台字段 | 选择 | 理由（后台也要填理由） |
-| --- | --- | --- |
-| 收集用户数据？ | **否** | 本扩展不收集、不上传、不分析任何用户数据；没有广告、没有遥测、没有统计。 |
-| 出售用户数据？ | **否** | 无任何数据可出售。 |
-| 与第三方共享用户数据？ | **否** | 扩展没有第三方服务器；用户自己配置的 API Key 与地址只用于向该服务商发起请求，扩展本身不中转、不留存。 |
-| 用户数据的加密传输？ | 不适用 | |
-| 用户可请求删除数据？ | 不适用 | |
-| 独立审核隐私实践？ | **否** | |
+## 商店详情
 
-> **如果后台的数据类型清单里要求勾选「网站内容」，请选择「不收集」**，并在理由里写：
-> 「网页正文由扩展直接发送给用户自行配置的大模型 API 服务商；扩展作者不接收、不存储、不分析这些内容。
-> 详见隐私政策第 3 节。」
+名称：Bilingual Reader — 双语对照翻译
 
-### 2.3 权限理由（Permission justifications）— 每条权限都要写
-
-| 权限 | 填写的理由 |
-| --- | --- |
-| `storage` | 把用户的引擎配置、API Key、翻译偏好与译文缓存保存在本机 `chrome.storage.local`，以便在浏览器重启后恢复设置，并避免重复请求消耗额度。数据不会离开用户的设备。 |
-| `contextMenus` | 在网页右键菜单中提供「翻译本页（双语对照）」「还原本页」「仅显示译文」「仅显示原文」四项快捷操作。 |
-| 主机权限 `<all_urls>` | 扩展的核心功能是在任意网页上识别正文并把译文渲染进页面，因此需要在用户访问的所有站点注入内容脚本。除当前活动标签页外，扩展不读取任何标签页信息。 |
+简短说明：段落级双语对照网页翻译：识别正文，原文与译文同屏阅读。支持自备大模型 API、本地模型及离线演示模式。
 
-### 2.4 隐私政策 URL
+类别：生产力 / 工具（以后台可选类别为准）
 
-填入你自己托管的 `privacy.html` 链接，例如：
+语言：中文（简体）
 
-```
-https://<你的域名>/bilingual-reader/privacy.html
-```
+详细说明：
 
----
-
-## 3. 审核备注（Notes for reviewer）— 整份里最重要的一段
+把英文网页变成一页双语对照，读原文的同时看懂译文。
 
-> 复制以下内容，**不要修改**。它已经处理好了「审核员没有 API Key」这个最大的坎。
+Bilingual Reader 识别网页正文并逐段翻译，把译文放在原文下方。标题、列表与表格都可对照阅读；代码块保持原文。可切换「双语对照」「仅译文」「仅原文」，随时还原页面。
 
-```
-Bilingual Reader 是一个段落级双语对照网页翻译扩展。
+【首次使用】
+真实翻译需要配置你自己的大模型 API 地址、模型和 API Key；本地部署的模型可按服务配置选择免 Key 鉴权。扩展不提供内置免费翻译额度。
 
-【如何验证（不需要 API Key）】
-扩展自带一个「演示模式」，可在完全离线的情况下验证全部界面与流程。
-包内附带了一个本地测试页，审核员可以按以下步骤操作：
+想先体验？在设置页添加「演示模式（本地示例，无需 Key）」并保存，然后打开项目演示页启动翻译。演示模式使用本地词表，不联网，只用于体验排版与操作，不代表真实机器翻译质量。
 
-  1. 把本扩展加载到 Chrome（开发者模式 → 加载已解压的扩展程序，或直接安装上传的 zip）。
-  2. 打开扩展包内的测试页：把扩展文件夹里的 demo/demo.html 拖进浏览器窗口即可打开。
-     （它是一个普通英文网页，用于演示翻译排版。）
-  3. 点工具栏图标 → 「翻译此页」。
-     应当看到：正文逐段被识别，译文以浅黄底纹显示在原文正下方，
-     导航菜单与目录未被翻译。
-  4. 点「仅显示译文」/「仅显示原文」切换显示模式。
-  5. 点「还原本页」，页面应当完全恢复原状（DOM 与翻译前逐字节相同）。
+【模型与翻译风格】
+支持 OpenAI 兼容接口、Anthropic、Gemini 和自定义接口，可接入 DeepSeek、Kimi、通义千问等服务，以及 Ollama、vLLM、LM Studio 本地模型。
+可配置多个引擎；支持地址及鉴权候选回退、批量翻译、响应字段自定义。
+内置通用、科技、新闻、学术、编程文档、GitHub、法律、医疗、金融、购物、客服、文学、社交媒体、通俗英语等场景，可编辑提示词或按网址匹配场景。
 
-【关于演示模式的重要说明】
-本扩展的核心功能必须由用户自备大模型 API（没有任何免 Key 的翻译通道），
-因此「刚安装、尚未配置 Key」的审核员无法直接看到真实译文。
-为解决这一点，扩展内置了「演示模式」：
-  · 完全在本地用内置小词表拼出示例译文，不发起任何网络请求，不需要 API Key；
-  · 演示模式下译文字体带浅黄底纹，界面与设置页都有明确的中文提示说明
-    「演示模式不是真正的机器翻译」；
-  · 它只是让「正文识别 → 双语排版 → 还原」这条链路可见，不代表产品的真实翻译质量。
-要验证真实翻译质量，审核员可自行注册任意一家大模型服务商的免费额度
-（DeepSeek / Kimi / 通义千问等均提供免费额度），在设置页填入 Base URL、模型名与 API Key 即可，
-扩展的「测试连接」按钮会立刻返回成功或具体错误。
-
-【权限说明】
-  · storage       —— 保存设置、API Key 与译文缓存（仅本机）
-  · contextMenus  —— 右键菜单的四个翻译操作
-  · <all_urls>    —— 在任意网页注入内容脚本以识别正文并渲染译文，这是核心功能所必需。
-扩展不申请 tabs / cookies / history / webRequest / downloads 等敏感权限。
-
-【隐私】
-扩展不收集、不上传、不分析任何用户数据，没有广告与遥测，也没有后台服务器。
-API Key 与全部配置只写入本机 chrome.storage.local。
-用户阅读的网页正文只会被发送到他自己配置的 API 服务商，扩展作者不参与这条链路。
-隐私政策：<把你的隐私政策链接贴在这里>
-
-【已知的边界】
-  · 浏览器内置页（chrome:// 与应用商店页）不允许注入脚本，无法翻译，这是浏览器限制。
-  · 闭源 Shadow DOM 无法穿透（open 模式的 shadow root 可以）。
-  · 页面使用 React/Vue 等框架频繁重渲染时，译文可能被框架覆盖，需要刷新重译。
-  · 大模型的地址/鉴权自动回退只在 404/405/401/403 时触发；429 限流与 500 错误原样报出。
-
-【源码】
-本扩展完全开源（MIT 协议），源码地址：<把你的 GitHub 仓库地址贴在这里>。
-代码为未混淆的原生 JavaScript，不含任何远程加载或动态执行的脚本。
-```
-
----
-
-## 4. 可选：测试账号凭据（Test credentials）
-
-后台有「测试凭据」字段。**本扩展没有账号体系，所以不需要填。**
-
-如果你手头有一个**专门用于审核的**大模型 API Key，可以填在这里（只填 Key、Base URL、模型名）：
-
-```
-Base URL: https://api.deepseek.com
-Model:    deepseek-chat
-API Key:  <在这里贴一个专用于审核的 Key>
-```
-
-> 不建议放主账号的 Key。审核过程通常在 1–3 个工作日内完成，
-> 之后建议立刻在服务商后台把它吊销并重新生成。
-
----
-
-## 5. 素材规格速查
-
-| 素材 | 尺寸 | 数量 | 本目录文件 |
-| --- | --- | --- | --- |
-| 商店图标 | 128×128 PNG | 1（必填） | `icons/icon128.png`（扩展包内） |
-| 工具栏图标 | 16×16 / 48×48 | 必填 | 扩展包内 |
-| 截图 | 1280×800 或 640×400，PNG/JPEG，**无 alpha 通道** | 1–5（建议 5） | `screenshot-0{1..5}-*.png` |
-| 小宣传图 | 440×280 PNG/JPEG | 可选 | `promo-small-440x280.png` |
-| 大宣传图 | 920×680 PNG/JPEG | 可选 | `promo-large-920x680.png` |
-| 横幅宣传图 | 1400×560 PNG/JPEG | 可选 | `promo-marquee-1400x560.png` |
-
-> ⚠️ **截图不能带 alpha 通道**。PNG 带透明通道在后台会被拒。
-> 生成脚本已经会把所有素材压平成不带 alpha 的 RGB。
-
----
-
-## 6. 上传步骤
-
-1. 开发者后台 → 「添加新商品」→ 上传 `bilingual-reader-store.zip`。
-2. 填「商店详情」：名称、简短说明、详细说明、类别、语言。
-3. 上传素材：商店图标 + 5 张截图（可选传宣传图）。
-4. 填「隐私实践」：单一用途、数据使用披露、权限理由、隐私政策 URL。
-5. 填「审核备注」：粘贴 §3 的内容，并把隐私政策与仓库链接替换成你的真实链接。
-6. 确认「分发」设置：建议先选「公开」，但勾选「手动发布」，
-   这样审核通过后你可以自己选择上架时间。
-7. 提交审核。通常 1–3 个工作日；新账号 + `<all_urls>` 主机权限可能需要 3–7 天。
-
----
-
-## 7. 发布包（manifest.json 必须在压缩包根目录）
-
-商店上传的包**不能**像仓库里的 zip 那样带一层目录。发布包由下面的命令生成：
-
-```bash
-cd bilingual-reader
-PY=/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/bin/python3
-
-$PY - <<'PY'
-import os, zipfile
-SRC = '.'
-OUT = '../bilingual-reader-store.zip'
-EXCLUDE_DIRS = {'__pycache__', '.git', 'node_modules', 'test', 'docs', 'store'}
-EXCLUDE_FILES = {'.DS_Store', 'README.md'}
-
-if os.path.exists(OUT):
-    os.remove(OUT)
-count = 0
-with zipfile.ZipFile(OUT, 'w', zipfile.ZIP_DEFLATED) as z:
-    for dirpath, dirnames, filenames in os.walk(SRC):
-        rel = os.path.relpath(dirpath, SRC)
-        # 顶层保留 demo/（审核员要用），其余测试与文档目录不进包
-        dirnames[:] = [d for d in dirnames
-                       if d not in EXCLUDE_DIRS
-                       and not (rel == '.' and d in EXCLUDE_DIRS)]
-        for f in filenames:
-            if f in EXCLUDE_FILES or f.endswith('.pyc'):
-                continue
-            p = os.path.join(dirpath, f)
-            # 压缩包根目录就是 manifest.json 所在层级
-            z.write(p, os.path.relpath(p, SRC))
-            count += 1
-print('发布包:', OUT, '文件数:', count)
-PY
-
-unzip -l ../bilingual-reader-store.zip | head -8
-```
-
-包内结构应当是：
-
-```
-manifest.json          ← 必须在根目录
-icons/
-src/
-demo/demo.html         ← 审核员要用的本地测试页
-```
-
----
-
-## 8. 提交前自检清单
-
-- [ ] 版本号已递增（本次为 `1.4.0`）
-- [ ] `manifest.json` 在压缩包根目录
-- [ ] 压缩包里没有 `test/`、`docs/`、`__pycache__`、`.DS_Store`
-- [ ] 隐私政策已挂在公网 HTTPS 地址，且能在浏览器里打开
-- [ ] 截图尺寸符合规格、**不带 alpha 通道**
-- [ ] 详细说明里写明了「需要自备 API Key」与「有演示模式」
-- [ ] 每条权限都写了具体理由
-- [ ] 审核备注里的隐私政策链接、源码链接已替换成你的真实地址
-- [ ] `chrome://extensions` 里手动装一遍发布包，确认能翻译、能还原
-- [ ] 权限只有 `storage` + `contextMenus` + `<all_urls>`
-- [ ] 代码未混淆、无远程脚本
-
----
-
-## 9. 每次更新都要做的事
-
-- [ ] `manifest.json` 的 `version` 递增（商店不接受重复版本号）
-- [ ] 在开发者后台的「变更日志」里写清楚这次改了什么
-- [ ] 重新生成发布包并上传
-- [ ] 审核备注里补一句「本次更新做了什么」
+【阅读与效率】
+正文识别默认排除导航、侧栏、页脚和目录；可用站点规则精确调整。
+懒翻译按滚动位置发请求，动态新增内容可自动补翻。
+本地缓存减少重复请求；术语库帮助统一专有名词。
+使用工具栏按钮、页面右键菜单或 Alt+T 启动与还原。
+
+【数据处理】
+扩展作者不运营接收正文或密钥的服务器，没有广告与遥测。真实翻译会把处理后的正文、提示词和鉴权信息直接发送到你配置的模型接口。可选 PII 脱敏会尝试替换邮箱、电话等信息，但不能保证识别全部敏感内容。完整说明请见隐私政策。
+
+本项目以 MIT 协议开源，独立实现，与「沉浸式翻译」无品牌或代码隶属关系。
+浏览器内置页和 Chrome 应用商店页面无法翻译；部分动态网页需刷新重译。
+
+## 单一用途
+
+识别网页正文并翻译为与原文逐段对照显示的译文，方便双语阅读。
+
+## 权限理由
+
+- storage：在浏览器本地保存引擎配置、API Key、翻译偏好及译文缓存，支持设置恢复与减少重复请求。
+- contextMenus：提供翻译本页、还原本页、仅显示译文、仅显示原文四项页面右键操作。
+- 主机权限 <all_urls>：在用户打开的网页中识别正文、插入及还原译文，同时访问用户自行配置的模型 API（含自建网关和本地服务），仅用于网页翻译。
+- 远程代码：不使用。扩展全部执行代码包含在上传包中；模型接口返回内容作为经过转义的文本显示，不执行远程代码。
+
+## 数据处理披露
+
+后台需按实际处理情况披露，不能因作者无服务器就填写「不处理任何数据」。
+
+- 网站内容：会读取、处理并按用户配置向模型接口传输待翻译正文。
+- 身份验证信息：会在本地保存用户输入的模型 API Key，并向指定接口发送鉴权信息。
+- 正文可能包含个人身份、财务、健康、个人通讯或位置信息；脱敏为可选的规则匹配，不保证完整移除。后台同时勾选这些正文数据类型，隐私政策说明其仅在待翻译正文中出现时处理。
+- 后台数据类型：个人身份信息、健康信息、财务和付款信息、身份验证信息、个人通讯、位置、网站内容。未选择网络记录和用户活动（不保存浏览历史列表或行为日志）。
+- 不读取密码管理器、浏览器 Cookie、浏览历史数据库，不建立广告档案。
+- 数据仅用于用户可见的翻译功能，不出售，不用于广告、信用或贷款判断；不传给与翻译无关的第三方。
+
+## 审核备注
+
+Bilingual Reader is an open-source, paragraph-level bilingual webpage translation extension.
+
+No extension account or test credentials are required.
+
+To verify without an API key:
+1. Install the extension and open its Options page.
+2. In 翻译引擎 (Translation engines), choose 演示模式（本地示例，无需 Key） from the engine picker, then click 保存这个引擎 (Save this engine). A fresh install has no engine selected; this step is required.
+3. Open https://xuyang1996.github.io/bilingual-reader/demo.html (an ordinary public HTTPS page).
+4. Click the toolbar icon and 翻译此页 (Translate this page). Scroll to translate additional paragraphs. Demo translations have a pale yellow background. Navigation and code blocks are skipped.
+5. Switch between dual / translation-only / original-only modes, then click 还原本页 (Restore).
+
+Demo mode uses a bundled local dictionary, makes no network requests, and is clearly labeled as a demonstration. It is not machine translation.
+For real translation, users supply their own model API URL/model/key or use a local model server. The extension sends text and authentication directly to that configured endpoint; the developer receives none of it. Optional PII masking is heuristic and does not guarantee removal of all sensitive content.
+
+Permissions: storage saves local settings/cache; contextMenus provides translation actions; <all_urls> enables paragraph recognition/rendering on user webpages and requests to user-configured API endpoints.
+No remote executable code is downloaded or run. Model responses are escaped before rendering.
+Chrome internal pages and Chrome Web Store pages cannot be translated.
+
+Privacy: https://xuyang1996.github.io/bilingual-reader/privacy.html
+Source: https://github.com/xuyang1996/bilingual-reader
+
+## 发布材料与操作
+
+- 商店包：仓库外 bilingual-reader-store.zip（manifest.json 位于根目录）。
+- 图标：icons/icon128.png。
+- 截图：store/screenshot-01-bilingual.png 至 screenshot-05-scenario.png（1280×800、RGB）。
+- 小宣传图：store/promo-small-440x280.png。
+- 横幅：store/promo-marquee-1400x560.png。
+- GitHub Pages：main 分支 /docs，包含 .nojekyll、主页、隐私政策与演示页。
+- 商店公开分发，提交审核后自动发布；最终状态以后台实际结果为准。
+- 若后台出现新的法律协议或认证要求，应由账号持有人确认或完成。
+
+## 变更记录
+
+2026-11-04：准备 v1.4.0 首次公开发布，补齐 GitHub 项目链接与 Pages 资源，修正文案中的数据流及演示模式验证步骤。扩展运行代码未变更。

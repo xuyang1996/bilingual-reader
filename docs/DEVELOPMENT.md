@@ -70,7 +70,7 @@ bilingual-reader/
 │   ├── popup/             popup.html  popup.js
 │   └── styles/            inject.css
 └── test/
-    ├── harness.html/js    单元测试页（63 项断言）
+    ├── harness.html/js    单元测试页（67 项断言）
     ├── engine.html/js     大模型接口自测台
     ├── e2e.py             端到端（真实 Chrome）
     ├── verify_ai.py       10 种接口形态（35 项断言）
@@ -772,7 +772,7 @@ var FORMATS = {
 
 | 层 | 工具 | 覆盖 | 耗时 |
 | --- | --- | --- | --- |
-| 单元 | `test/harness.html` | 63 项断言，纯 DOM、不联网 | <10s |
+| 单元 | `test/harness.html` | 67 项断言，纯 DOM、不联网 | <10s |
 | 接口 | `test/engine.html` | 大模型接口自测台，人工看 | — |
 | 端到端 | `test/e2e.py` | 真实 Chrome + 真实扩展 + 真实 HTTP | ~40s |
 | 接口形态 | `test/verify_ai.py` | 35 项断言，10 种接口形态 | ~4min |

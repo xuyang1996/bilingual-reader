@@ -1,0 +1,20 @@
+Bilingual Reader is an open-source, paragraph-level bilingual webpage translation extension.
+
+No extension account or test credentials are required.
+
+To verify without an API key:
+1. Install the extension and open its Options page.
+2. In 翻译引擎 (Translation engines), choose 演示模式（本地示例，无需 Key） from the engine picker, then click 保存这个引擎 (Save this engine). A fresh install has no engine selected; this step is required.
+3. Open https://xuyang1996.github.io/bilingual-reader/demo.html (an ordinary public HTTPS page).
+4. Click the toolbar icon and 翻译此页 (Translate this page). Scroll to translate additional paragraphs. Demo translations have a pale yellow background. Navigation and code blocks are skipped.
+5. Switch between dual / translation-only / original-only modes, then click 还原本页 (Restore).
+
+Demo mode uses a bundled local dictionary, makes no network requests, and is clearly labeled as a demonstration. It is not machine translation.
+For real translation, users supply their own model API URL/model/key or use a local model server. The extension sends text and authentication directly to that configured endpoint; the developer receives none of it. Optional PII masking is heuristic and does not guarantee removal of all sensitive content.
+
+Permissions: storage saves local settings/cache; contextMenus provides translation actions; <all_urls> enables paragraph recognition/rendering on user webpages and requests to user-configured API endpoints.
+No remote executable code is downloaded or run. Model responses are escaped before rendering.
+Chrome internal pages and Chrome Web Store pages cannot be translated.
+
+Privacy: https://xuyang1996.github.io/bilingual-reader/privacy.html
+Source: https://github.com/xuyang1996/bilingual-reader

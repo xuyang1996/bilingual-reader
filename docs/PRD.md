@@ -78,7 +78,7 @@
 - **Manifest V3**，`minimum_chrome_version: 96`，仅 Chrome。
 - **零构建**：全部为 classic script，挂载到全局命名空间 `IMT`；无 npm、无打包器，克隆即改即跑。
 - **后台**：MV3 Service Worker（`src/background/worker.js`）。
-- **权限**：`storage` / `contextMenus` / `activeTab` / `scripting`，主机权限 `<all_urls>`。
+- **权限**：`storage` / `contextMenus`，主机权限 `<all_urls>`。
 
 ### 3.2 模块划分
 
@@ -93,7 +93,6 @@
 | 核心 | `src/core/glossary.js` | 术语库解析、提示词生成、强制替换 |
 | 核心 | `src/core/render.js` | 译文插入与还原 |
 | 核心 | `src/core/pipeline.js` | 翻译队列、懒翻译、增量翻译、并发控制 |
-| 核心 | `src/core/client.js` | 内容脚本 ↔ 后台的传输层 |
 | 后台 | `src/background/engines.js` | 通用大模型引擎内核（地址候选 / 鉴权候选 / 响应解析 / 批量协议） |
 | 后台 | `src/background/cache.js` | 译文缓存 |
 | 后台 | `src/background/worker.js` | 消息路由、配置读写、右键菜单、快捷键 |
@@ -463,7 +462,7 @@
 | 兼容性 | Chrome 96+ | MV3，避开仅在更高版本可用的 API |
 | 可移植性 | 不绑定构建工具 | 纯 classic script + `IMT` 全局命名空间 |
 | 隐私 | 内容与密钥不出本机 | BYOK + PII 脱敏 + 本地存储 |
-| 可测试性 | 关键逻辑可离线验证 | 单元测试页（63 项断言）、大模型接口自测台、端到端脚本、设置页往返脚本 |
+| 可测试性 | 关键逻辑可离线验证 | 单元测试页（67 项断言）、大模型接口自测台、端到端脚本、设置页往返脚本 |
 | 无障碍 / 兼容 | 翻译不破坏页面结构 | 代码/数学/SVG/交互控件强制保留原文 |
 
 ---
@@ -558,7 +557,7 @@
 
 | # | 验收项 | 结果 |
 | --- | --- | --- |
-| 1 | 单元测试（63 项断言，真实 DOM，不联网） | 63 通过 / 0 失败 |
+| 1 | 单元测试（67 项断言，真实 DOM，不联网） | 67 通过 / 0 失败 |
 | 2 | 端到端翻译（demo 页） | 52 段译文 / 0 错误 |
 | 3 | 大模型接口端到端（10 种接口形态，35 项断言） | 35 通过 / 0 失败 |
 | 4 | popup 行为断言 | 全部通过 |
