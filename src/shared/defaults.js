@@ -343,5 +343,5 @@
   IMT.CACHE_KEY_PREFIX = 'imtl.cache.';
   IMT.FLOATING_ENABLED_KEY = 'imtl.floating.enabled';
   IMT.FLOATING_POSITION_KEY = 'imtl.floating.position';
-  IMT.VERSION = '1.4.3';
+  IMT.VERSION = '1.4.4';
 })(typeof globalThis !== 'undefined' ? globalThis : this);

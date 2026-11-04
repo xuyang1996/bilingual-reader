@@ -42,7 +42,7 @@ Debajo del botón principal, **Pausar (`暂停`)** conserva las traducciones y c
 
 Una instalación nueva **no tiene ningún motor configurado**. La traducción real necesita un servicio de modelos que funcione. La extensión no proporciona un servicio de traducción alojado ni créditos de API. El proveedor puede cobrar por las solicitudes.
 
-También puedes traducir con el **botón flotante `译`** a la derecha de las páginas web normales. Arrástralo a cualquier posición; se recuerda entre páginas. Al pasar el ratón o darle el foco con el teclado, aparecen los controles de pausa/continuación, retraducción, restauración, ajustes y cierre. Para volver a mostrarlo, usa **显示网页浮签** en el panel de la extensión o actívalo en **译文样式** en los ajustes.
+También puedes traducir con el **botón flotante `译`**, fijo a la derecha de las páginas web normales. Mide 32 px, es semitransparente en reposo y opaco al pasar el ratón. Solo se arrastra verticalmente y recuerda la altura entre páginas. Al pasar el ratón o darle el foco con el teclado, aparecen los controles de pausa/continuación, retraducción, restauración, ajustes y cierre. Para volver a mostrarlo, usa **显示网页浮签** en el panel de la extensión o actívalo en **译文样式** en los ajustes.
 
 ### Probar sin clave de API
 

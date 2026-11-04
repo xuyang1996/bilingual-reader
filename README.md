@@ -42,7 +42,7 @@ Below the main button, **Pause (`暂停`)** keeps existing translations and canc
 
 A fresh installation has **no configured engine**. Real translation requires a working model endpoint; the extension supplies no hosted translation service or API credits. Your provider may charge for requests.
 
-You can also click the **floating `译` button** on the right side of ordinary webpages. Drag it anywhere; its position is remembered across pages. Hover or focus it for pause/continue, retranslation, restoration, settings and close controls. After closing it, select **显示网页浮签** (show webpage widget) in the extension popup, or enable it under **译文样式** (display settings).
+You can also click the compact **floating `译` button** fixed to the right side of ordinary webpages. Drag it vertically; its height is remembered across pages. The 32 px button is half transparent when idle and fully opaque on hover. Hover or focus it for pause/continue, retranslation, restoration, settings and close controls. After closing it, select **显示网页浮签** (show webpage widget) in the extension popup, or enable it under **译文样式** (display settings).
 
 ### Try it without an API key
 

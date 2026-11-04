@@ -3,7 +3,7 @@
   'use strict';
   var IMT = root.IMT;
   var U = IMT.utils;
-  var SIZE = 48, MARGIN = 8;
+  var SIZE = 32, MARGIN = 8;
 
   IMT.floating = {
     create: function (options) {
@@ -18,7 +18,7 @@
       host.setAttribute('data-imtl-ui', 'floating');
       // Inline !important protects the host itself; Shadow DOM protects its children.
       host.style.cssText = 'all:initial!important;position:fixed!important;display:block!important;' +
-        'width:48px!important;height:48px!important;z-index:2147483647!important;' +
+        'width:32px!important;height:32px!important;right:8px!important;left:auto!important;z-index:2147483647!important;' +
         'margin:0!important;padding:0!important;border:0!important;direction:ltr!important;' +
         'visibility:visible!important;opacity:1!important;pointer-events:auto!important;';
       var shadow = host.attachShadow({ mode: 'open' });
@@ -28,12 +28,13 @@
         'button{font:inherit;cursor:pointer;line-height:1.4}' +
         'button:focus-visible{outline:3px solid #61b7ff;outline-offset:3px}' +
         'button:disabled{cursor:not-allowed;opacity:.45}' +
-        '.trigger{width:48px;height:48px;border:1px solid #ffffff66;border-radius:16px;' +
+        '.trigger{width:32px;height:32px;border:1px solid #ffffff66;border-radius:11px;opacity:.5;' +
         'background:linear-gradient(145deg,#2588eb,#1558ba);color:#fff;box-shadow:0 4px 18px #163b7330;' +
-        'font-size:22px;font-weight:650;display:grid;place-items:center;padding:0;touch-action:none;user-select:none;cursor:grab}' +
+        'font-size:17px;font-weight:650;display:grid;place-items:center;padding:0;touch-action:none;user-select:none;cursor:ns-resize}' +
+        ':host(:hover) .trigger,.trigger:focus-visible,.trigger[data-dragging="true"]{opacity:1}' +
         '.trigger:active{cursor:grabbing}.trigger[data-paused="true"]{background:linear-gradient(145deg,#d79025,#a5640d)}' +
         '.trigger[data-working="true"]::after{content:"";position:absolute;right:2px;top:2px;' +
-        'width:10px;height:10px;border-radius:50%;background:#69e6bb;border:2px solid #fff}' +
+        'width:8px;height:8px;border-radius:50%;background:#69e6bb;border:2px solid #fff}' +
         '.panel{position:fixed;width:224px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;' +
         'padding:12px;border:1px solid #dde3eb;border-radius:16px;background:#fff;color:#243247;' +
         'box-shadow:0 8px 32px #12264826;text-align:left;direction:ltr;font-size:13px;line-height:1.5}' +
@@ -51,11 +52,11 @@
         '.status,.footer button{color:#b3c0d2}.hint{color:#94a4ba}.actions button{background:#2a3546;border-color:#44526a}' +
         '.actions button.primary{background:#203e62;color:#9fceff;border-color:#355c87}' +
         '.actions button:hover:not(:disabled){background:#304a6b}.footer{border-color:#39475c}.status.error{color:#ff9ba7}}' +
-        '@media(prefers-reduced-motion:no-preference){.trigger{transition:box-shadow .15s}.trigger:hover{box-shadow:0 5px 22px #1558ba55}}' +
+        '@media(prefers-reduced-motion:no-preference){.trigger{transition:box-shadow .15s,opacity .15s}.trigger:hover{box-shadow:0 5px 22px #1558ba55}}' +
         '</style>' +
         '<button class="trigger" type="button" aria-controls="imtl-floating-panel" aria-expanded="false">译</button>' +
         '<section class="panel" id="imtl-floating-panel" aria-label="Bilingual Reader 翻译控制" hidden>' +
-        '<div class="heading"><span>Bilingual Reader</span><span class="hint">拖动浮签摆放</span></div>' +
+        '<div class="heading"><span>Bilingual Reader</span><span class="hint">上下拖动</span></div>' +
         '<p class="status" role="status">点击浮签翻译本页</p>' +
         '<div class="actions"><button type="button" class="primary" data-action="pause">暂停</button>' +
         '<button type="button" data-action="retranslate">重新翻译</button>' +
@@ -67,27 +68,25 @@
       var status = shadow.querySelector('.status');
       function clamp(value, min, max) { return Math.max(min, Math.min(Math.max(min, max), value)); }
       function ranges() {
-        return { x: Math.max(0, root.innerWidth - SIZE - 2 * MARGIN),
-          y: Math.max(0, root.innerHeight - SIZE - 2 * MARGIN) };
+        return { y: Math.max(0, root.innerHeight - SIZE - 2 * MARGIN) };
       }
       function layoutPanel() {
         var width = Math.min(224, Math.max(0, root.innerWidth - 16));
-        var left = point.x > root.innerWidth / 2 ? point.x - width - 8 : point.x + SIZE + 8;
+        var left = point.x - width - 8;
         panel.style.left = clamp(left, MARGIN, root.innerWidth - width - MARGIN) + 'px';
         panel.style.top = clamp(point.y, MARGIN, root.innerHeight - panel.offsetHeight - MARGIN) + 'px';
       }
-      function place(x, y) {
+      function place(y) {
         var range = ranges();
-        point.x = clamp(x, MARGIN, MARGIN + range.x);
+        point.x = Math.max(0, root.innerWidth - SIZE - MARGIN);
         point.y = clamp(y, MARGIN, MARGIN + range.y);
-        host.style.setProperty('left', point.x + 'px', 'important');
         host.style.setProperty('top', point.y + 'px', 'important');
         layoutPanel();
       }
       function layout() {
         var range = ranges(), p = prefs.position;
-        place(p ? MARGIN + p.x * range.x : root.innerWidth - SIZE - 16,
-          p ? MARGIN + p.y * range.y : MARGIN + range.y * .55);
+        // Ignore horizontal coordinates saved by older versions; keep their height.
+        place(p ? MARGIN + p.y * range.y : MARGIN + range.y * .55);
       }
       function open(value) {
         clearTimeout(closeTimer);
@@ -100,8 +99,8 @@
         var active = state.state === 'translated';
         trigger.textContent = state.paused ? '续' : active ? '原' : '译';
         var label = state.paused ? '继续翻译' : active ? '还原本页' : '翻译此页';
-        trigger.setAttribute('aria-label', label + '；可拖动调整位置');
-        trigger.title = label + ' · 悬停展开控制 · 拖动调整位置';
+        trigger.setAttribute('aria-label', label + '；可上下拖动调整高度');
+        trigger.title = label + ' · 悬停展开控制 · 上下拖动调整高度';
         trigger.setAttribute('aria-busy', String(busy));
         trigger.dataset.paused = String(!!state.paused);
         trigger.dataset.working = String(!state.paused && !!state.pending);
@@ -160,7 +159,8 @@
       });
       trigger.addEventListener('pointerdown', function (event) {
         if (event.button !== 0 || busy) return;
-        dragging = { id: event.pointerId, x: event.clientX, y: event.clientY, left: point.x, top: point.y, moved: false };
+        dragging = { id: event.pointerId, x: event.clientX, y: event.clientY, top: point.y, moved: false };
+        trigger.dataset.dragging = 'true';
         trigger.setPointerCapture(event.pointerId);
         event.stopPropagation();
       });
@@ -170,19 +170,19 @@
         if (dragging.id !== event.pointerId) return;
         var dx = event.clientX - dragging.x, dy = event.clientY - dragging.y;
         if (Math.abs(dx) + Math.abs(dy) > 6) dragging.moved = true;
-        if (dragging.moved) { open(false); place(dragging.left + dx, dragging.top + dy); }
+        if (dragging.moved) { open(false); place(dragging.top + dy); }
         event.stopPropagation();
       }
       function endDrag(event) {
         if (!dragging || dragging.id !== event.pointerId) return;
         var moved = dragging.moved;
         dragging = null;
+        trigger.dataset.dragging = 'false';
         if (trigger.hasPointerCapture(event.pointerId)) trigger.releasePointerCapture(event.pointerId);
         if (moved) {
           suppressClickUntil = Date.now() + 400;
           var range = ranges();
-          prefs.position = { x: range.x ? (point.x - MARGIN) / range.x : 0,
-            y: range.y ? (point.y - MARGIN) / range.y : 0 };
+          prefs.position = { x: 1, y: range.y ? (point.y - MARGIN) / range.y : 0 };
           U.floatingPrefs.write({ position: prefs.position }).catch(showError);
         }
         event.stopPropagation();

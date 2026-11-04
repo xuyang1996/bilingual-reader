@@ -64,6 +64,8 @@ def main():
             ws.call('Page.enable', {}, sid)
             return tid, sid
 
+        # Upgrade an old free-position preference: preserve its height, ignore x.
+        evaluate("chrome.storage.local.set({'imtl.floating.position':{x:0.15,y:0.55}})", worker)
         url = 'http://127.0.0.1:8766/bilingual-reader/demo/demo.html'
         target, page = tab(url)
         host = "document.getElementById('imtl-floating')"
@@ -74,6 +76,8 @@ def main():
         check(evaluate(shadow + ".querySelector('.panel').hidden", page), 'hover menu starts collapsed')
         check(evaluate('(function(){var r=' + host + '.getBoundingClientRect();return r.right<=innerWidth && r.left>innerWidth*.8;})()', page),
               'default position is on the right side of the viewport')
+        check(evaluate('(function(){var r=' + host + '.getBoundingClientRect();return Math.abs(r.right-(innerWidth-8))<1 && Math.abs(r.top-(8+.55*(innerHeight-48)))<2;})()', page),
+              'legacy horizontal placement is ignored while its height is preserved')
 
         def rect(selector='.trigger', sid=page):
             return evaluate('(function(){var r=' + shadow + '.querySelector(' + json.dumps(selector) +
@@ -89,7 +93,7 @@ def main():
             try:
                 wait(lambda: evaluate('!' + shadow + ".querySelector('.panel').hidden", page))
             except TimeoutError:
-                print('Hover diagnostics:', evaluate('(function(){var r=' + shadow + ".querySelector('.trigger').getBoundingClientRect();var e=document.elementFromPoint(r.x+24,r.y+24);return {width:innerWidth,height:innerHeight,x:r.x,y:r.y,hit:e&&e.outerHTML.slice(0,250),focus:document.hasFocus()};})()", page), flush=True)
+                print('Hover diagnostics:', evaluate('(function(){var r=' + shadow + ".querySelector('.trigger').getBoundingClientRect();var e=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {width:innerWidth,height:innerHeight,x:r.x,y:r.y,hit:e&&e.outerHTML.slice(0,250),focus:document.hasFocus()};})()", page), flush=True)
                 shot = ws.call('Page.captureScreenshot', {'format': 'png'}, page)
                 Path('/tmp/bilingual-reader-floating-hover-debug.png').write_bytes(base64.b64decode(shot['data']))
                 raise
@@ -109,9 +113,18 @@ def main():
                 "var t=tabs.find(t=>(t.url||'')===" + json.dumps(url) + ");"
                 "chrome.tabs.sendMessage(t.id,{target:'imtl-content',action:'query'},resolve);}))", worker)
 
+        check(rect()['width'] == 32 and rect()['height'] == 32, 'floating button is reduced to 32 by 32 pixels')
+        opacity = 'Number(getComputedStyle(' + shadow + ".querySelector('.trigger')).opacity)"
+        wait(lambda: abs(evaluate(opacity, page) - .5) < .01)
+        check(True, 'idle button is half transparent')
         hover()
+        wait(lambda: evaluate(opacity, page) > .99)
+        check(True, 'hover restores full opacity')
         check(evaluate(shadow + ".querySelectorAll('[data-action]').length === 6", page),
               'hover exposes pause, retranslate, retry, restore, settings and close controls')
+        mouse('mouseMoved', 0, 0)
+        wait(lambda: abs(evaluate(opacity, page) - .5) < .01)
+        check(True, 'leaving the widget restores half transparency')
         click_trigger()
         wait(lambda: state().get('done', 0) >= 3 and state().get('pending'))
         click_action('pause')
@@ -129,7 +142,7 @@ def main():
         click_action('pause')
         completed = wait(lambda: (lambda s: s if not s.get('paused') and not s.get('pending') and s.get('done', 0) > 10 else None)(state()))
         check(not completed['failed'], 'floating Continue finishes translation without failures')
-        check(all('拖动浮签摆放' not in json.dumps(r['body'], ensure_ascii=False) and
+        check(all('上下拖动' not in json.dumps(r['body'], ensure_ascii=False) and
                   '关闭浮签' not in json.dumps(r['body'], ensure_ascii=False) for r in mock.requests()['requests']),
               'floating UI text is never sent for translation')
 
@@ -152,22 +165,28 @@ def main():
             "window.__floatingPointer.push({type:e.type,x:e.clientX,y:e.clientY,id:e.pointerId,button:e.button,buttons:e.buttons,target:e.composedPath()[0].className}),true));"
             "window.addEventListener('error',e=>window.__floatingErrors.push(e.message));", page)
         r = rect()
-        x, y = r['x']+24, r['y']+24
+        x, y = r['x']+r['width']/2, r['y']+r['height']/2
         mouse('mousePressed', x, y, button='left', clickCount=1)
         for i in range(1, 9):
             mouse('mouseMoved', x+(180-x)*i/8, y+(120-y)*i/8, buttons=1)
         mouse('mouseReleased', 180, 120, button='left', clickCount=1)
         time.sleep(.2)
         moved = rect()
-        if abs(moved['x']-156) >= 2:
+        if abs(moved['x']-r['x']) >= 2:
             print('Pointer diagnostics:', evaluate('({events:__floatingPointer,errors:__floatingErrors,busy:' + shadow + ".querySelector('.trigger').getAttribute('aria-busy')})", page), flush=True)
-        check(abs(moved['x']-156) < 2 and abs(moved['y']-96) < 2,
-              'drag freely changes horizontal and vertical placement', moved)
+        check(abs(moved['x']-r['x']) < 1 and abs(moved['y']-104) < 2,
+              'diagonal dragging changes only height and stays docked on the right', moved)
         check(state().get('done') == before_state['done'] and len(mock.requests()['requests']) == before_requests,
               'dragging does not translate or restore the page')
         position = evaluate("chrome.storage.local.get('imtl.floating.position').then(d=>d['imtl.floating.position'])", worker)
-        check(position and 0 <= position['x'] <= 1 and 0 <= position['y'] <= 1,
-              'drag position is persisted as viewport proportions')
+        check(position and position['x'] == 1 and 0 <= position['y'] <= 1,
+              'saved position fixes the right edge and remembers relative height')
+        x, y = moved['x']+16, moved['y']+16
+        mouse('mousePressed', x, y, button='left', clickCount=1)
+        mouse('mouseMoved', 300, y, buttons=1)
+        mouse('mouseReleased', 300, y, button='left', clickCount=1)
+        check(abs(rect()['x']-moved['x']) < 1 and abs(rect()['y']-moved['y']) < 1 and state().get('done') == before_state['done'],
+              'horizontal-only dragging neither moves the widget nor triggers translation')
 
         ws.call('Page.reload', {'ignoreCache': True}, page)
         wait(lambda: evaluate('!!(' + host + ')', page))
@@ -184,7 +203,8 @@ def main():
 
         ws.call('Target.activateTarget', {'targetId': target})
         ws.call('Emulation.setDeviceMetricsOverride', {'width': 320, 'height': 420, 'deviceScaleFactor': 1, 'mobile': False}, page)
-        wait(lambda: abs(rect()['x'] - (8 + position['x'] * (320 - 64))) < 2)
+        wait(lambda: abs(rect()['x'] - (320 - 32 - 8)) < 2 and
+             abs(rect()['y'] - (8 + position['y'] * (420 - 32 - 16))) < 2)
         hover()
         check(evaluate('(function(){var r=' + shadow + ".querySelector('.panel').getBoundingClientRect();return r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight;})()", page),
               'hover menu remains inside a small viewport')
