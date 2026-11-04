@@ -45,7 +45,7 @@ importScripts(
    * ------------------------------------------------------------------ */
 
   var active = 0;
-  var MAX_ACTIVE = 8;
+  var MAX_ACTIVE = 2;
   var waiters = [];
 
   function release() {
@@ -166,16 +166,23 @@ importScripts(
 
       if (!useCache) {
         return callEngine(texts).then(function (out) {
-          return { ok: true, texts: out };
+          return { ok: true, texts: out, errors: out.errors || [] };
         });
       }
 
+      // 模型/地址/提示词改变后，不能继续用旧模型留下的缓存掩盖配置故障。
+      var cacheEngine = engineId + ':' + U.hashString(JSON.stringify([
+        engine.baseUrl, engine.path, engine.model, engine.format, engine.systemRole,
+        engine.systemPrompt, engine.extraBody, engine.responsePath, engine.temperature,
+        engine.maxTokens, scenario, cfg.customScenarios || {}, cfg.glossary || []
+      ]));
       var keys = texts.map(function (t) {
-        return IMT.cache.key(t, sourceLang, targetLang, engineId);
+        return IMT.cache.key(t, sourceLang, targetLang, cacheEngine);
       });
 
       return IMT.cache.getMany(keys).then(function (cached) {
         var result = new Array(texts.length);
+        var errors = new Array(texts.length);
         var missingIdx = [];
         var missingText = [];
 
@@ -196,20 +203,17 @@ importScripts(
           missingIdx.forEach(function (idx, i) {
             var val = (translated && typeof translated[i] === 'string' && translated[i]) ? translated[i] : '';
             result[idx] = val;
+            errors[idx] = (translated.errors || [])[i] || null;
             if (val) toCache[keys[idx]] = val;
           });
           return IMT.cache.setMany(toCache).then(function () {
-            return { ok: true, texts: result };
+            return { ok: true, texts: result, errors: errors };
           });
         });
       });
     }).catch(function (err) {
-      var msg = String((err && err.message) || err);
-      if (err && err.code === 'ENGINE_RATE_LIMIT') {
-        msg = '接口暂时不可用（多半是被限流或额度用尽）。可以稍后重试，' +
-          '或在设置页换一个引擎 / 调大超时。';
-      }
-      return { ok: false, error: msg };
+      return Object.assign({ ok: false, error: String((err && err.message) || err) },
+        IMT.engines._internal.errorInfo(err));
     });
   }
 
@@ -371,15 +375,26 @@ importScripts(
    * 右键菜单
    * ------------------------------------------------------------------ */
 
+  var creatingMenus = false;
   function createMenus() {
+    if (creatingMenus) return;
+    creatingMenus = true;
     try {
       chrome.contextMenus.removeAll(function () {
-        chrome.contextMenus.create({ id: 'imtl-translate', title: '翻译本页（双语对照）', contexts: ['page'] });
-        chrome.contextMenus.create({ id: 'imtl-restore', title: '还原本页', contexts: ['page'] });
-        chrome.contextMenus.create({ id: 'imtl-translation-only', title: '仅显示译文', contexts: ['page'] });
-        chrome.contextMenus.create({ id: 'imtl-original-only', title: '仅显示原文', contexts: ['page'] });
+        void chrome.runtime.lastError;
+        var menus = [
+          ['imtl-translate', '翻译本页（双语对照）'], ['imtl-restore', '还原本页'],
+          ['imtl-translation-only', '仅显示译文'], ['imtl-original-only', '仅显示原文']
+        ];
+        var pending = menus.length;
+        menus.forEach(function (menu) {
+          chrome.contextMenus.create({ id: menu[0], title: menu[1], contexts: ['page'] }, function () {
+            void chrome.runtime.lastError;
+            if (!--pending) creatingMenus = false;
+          });
+        });
       });
-    } catch (e) { /* ignore */ }
+    } catch (e) { creatingMenus = false; }
   }
 
   if (chrome.contextMenus) {

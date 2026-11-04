@@ -65,10 +65,14 @@
               return;
             }
             if (!res.ok) {
-              reject(new Error(res.error || '翻译失败'));
+              var err = new Error(res.error || '翻译失败');
+              err.code = res.code;
+              err.status = res.status;
+              err.fatal = !!res.fatal;
+              reject(err);
               return;
             }
-            resolve(res.texts || []);
+            resolve({ texts: res.texts || [], errors: res.errors || [] });
           });
         } catch (e) {
           reject(e);
@@ -171,7 +175,8 @@
       done: stats ? stats.done : 0,
       total: stats ? stats.total : 0,
       failed: stats ? stats.failed : 0,
-      error: lastError
+      pending: stats ? stats.pending : 0,
+      error: (stats && stats.failed && stats.lastError) || lastError
     };
     try {
       chrome.runtime.sendMessage({ type: 'IMT_STATE_REPORT', payload: state }, function () {
@@ -196,6 +201,11 @@
         return stopTranslation();
       case 'toggle':
         return toggle();
+      case 'retry':
+        if (!controller) return startTranslation();
+        lastError = null;
+        controller.retryFailed();
+        return reportState(controller.getStats());
       case 'setMode':
         return setMode(opts.mode || msg.mode);
       case 'setLang':

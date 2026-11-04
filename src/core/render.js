@@ -74,7 +74,8 @@
     }
 
     el.classList.add('imtl-block');
-    el.classList.remove('imtl-pending');
+    el.classList.remove('imtl-pending', 'imtl-error');
+    el.removeAttribute('data-imtl-error');
     el.setAttribute('data-imtl-state', 'translated');
     return trans;
   };

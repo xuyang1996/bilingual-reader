@@ -184,9 +184,11 @@
   function renderPage(state) {
     page = state || {};
     var translated = page.state === 'translated';
+    $('retry').hidden = !page.failed;
+    $('retry').disabled = !!page.pending;
     $('toggle').textContent = translated ? '还原本页' : '翻译此页';
     if (page.error) {
-      renderStatus(page.error, true);
+      renderStatus('已译 ' + (page.done || 0) + ' 段 · 失败 ' + (page.failed || 0) + '。' + page.error, true);
     } else if (translated) {
       var bits = [];
       if (typeof page.done === 'number') bits.push('已译 ' + page.done + ' 段');
@@ -334,6 +336,13 @@
     });
 
     $('toggle').addEventListener('click', togglePage);
+    $('retry').addEventListener('click', function () {
+      $('retry').disabled = true;
+      pageAction('retry').then(function (res) {
+        if (res && res.ok) renderPage(res);
+        else renderStatus((res && res.error) || '重试失败', true);
+      });
+    });
 
     $('noticeConfig').addEventListener('click', openOptions);
 

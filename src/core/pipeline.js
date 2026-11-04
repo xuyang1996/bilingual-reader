@@ -57,7 +57,7 @@
     /** 演示引擎的译文是本地拼的示例，给个标记别让人误以为是真翻译 */
     var isDemo = engine.format === 'demo';
     var batchSize = Math.max(1, engine.batchSize || 1);
-    var concurrency = batchSize > 1 ? 2 : 4;
+    var concurrency = 2;
     var lazy = c.lazy !== false && cfg.lazy !== false;
 
     var targetLang = rule.targetLang || cfg.targetLang || 'zh-Hans';
@@ -71,10 +71,12 @@
     var io = null;
     var observer = null;
     var selfMutate = false;
+    var failedItems = new Set();
+    var haltedError = null;
 
     var stats = {
       total: 0, done: 0, failed: 0, skipped: 0,
-      pending: 0, mode: 'none', startedAt: Date.now()
+      pending: 0, mode: 'none', lastError: null, startedAt: Date.now()
     };
 
     /* ---------------- 进度 ---------------- */
@@ -116,6 +118,7 @@
         if (IMT.render.isTranslated(item.el)) return false;
         // 已经是目标语言的内容无需翻译
         if (isTargetLanguage(item.text)) {
+          item.state = 'skipped';
           stats.skipped++;
           return false;
         }
@@ -126,14 +129,22 @@
         return;
       }
 
+      if (haltedError) {
+        usable.forEach(function (item) { markFailed(item, haltedError); });
+        notify();
+        return;
+      }
+
       if (lazy && typeof IntersectionObserver !== 'undefined') {
         usable.forEach(function (item) {
           IMT.render.markPending(item.el);
+          item.state = 'waiting';
           io.observe(item.el);
         });
       } else {
         usable.forEach(function (item) {
           IMT.render.markPending(item.el);
+          item.state = 'queued';
           queue.push(item);
         });
         pump();
@@ -150,8 +161,9 @@
     }
 
     function pump() {
-      while (!stopped && running < concurrency && queue.length) {
+      while (!stopped && !haltedError && running < concurrency && queue.length) {
         var batch = queue.splice(0, batchSize);
+        batch.forEach(function (item) { item.state = 'running'; });
         running++;
         translateBatch(batch)
           .catch(function () { /* 错误已在 translateBatch 内处理 */ })
@@ -165,6 +177,28 @@
     }
 
     /* ---------------- 单批翻译 ---------------- */
+
+    function markFailed(item, err) {
+      if (stopped || item.state === 'translated' || item.state === 'skipped') return;
+      item.state = 'failed';
+      failedItems.add(item);
+      stats.failed = failedItems.size;
+      stats.lastError = String((err && err.message) || err || '翻译失败');
+      item.el.classList.add('imtl-error');
+      item.el.setAttribute('data-imtl-error', stats.lastError);
+      IMT.render.clearPending(item.el);
+    }
+
+    function halt(err) {
+      if (!err || !err.fatal) return;
+      haltedError = err;
+      queue.length = 0;
+      if (io) io.disconnect();
+      registry.forEach(function (item) {
+        // 已经发出的请求自行完成，其余段落保留原文并允许之后补翻。
+        if (item.state !== 'running') markFailed(item, err);
+      });
+    }
 
     function translateBatch(batch) {
       var usePII = !!(cfg.pii && cfg.pii.enabled);
@@ -185,39 +219,52 @@
 
       return I.client.translate(req.texts, req).then(function (res) {
         if (stopped) return;
-        var list = Array.isArray(res) ? res : [];
+        var list = Array.isArray(res) ? res : ((res && res.texts) || []);
+        var errors = (res && res.errors) || [];
         batch.forEach(function (item, i) {
-          var raw = typeof list[i] === 'string' && list[i] ? list[i] : item.text;
-
-          if (usePII && encoded[i].map) {
-            raw = IMT.pii.decode(raw, encoded[i].map);
+          if (errors[i] || typeof list[i] !== 'string' || !list[i].trim()) {
+            var failure = errors[i] || { message: '接口未返回该段译文，请重试失败段落' };
+            markFailed(item, failure);
+            halt(failure);
+            return;
           }
-          // 还原被保护的技术片段
-          (item.parts || []).forEach(function (p) {
-            raw = String(raw).split(p.placeholder).join(p.original);
-          });
-          // 术语库后处理（提示词没生效时，靠这一步兜底）
-          raw = IMT.glossary.apply(raw, cfg.glossary || []);
+          try {
+            var raw = list[i];
 
-          raw = String(raw).trim();
-          if (!raw) raw = item.text;
+            if (usePII && encoded[i].map) {
+              raw = IMT.pii.decode(raw, encoded[i].map);
+            }
+            // 还原被保护的技术片段
+            (item.parts || []).forEach(function (p) {
+              raw = String(raw).split(p.placeholder).join(p.original);
+            });
+            // 术语库后处理（提示词没生效时，靠这一步兜底）
+            raw = IMT.glossary.apply(raw, cfg.glossary || []);
 
-          IMT.render.insert(item.el, raw, {
-            position: position,
-            wrapperTag: (cfg.render && cfg.render.targetWrapperTag) || 'font',
-            targetLang: targetLang,
-            demo: isDemo
-          });
-          stats.done++;
+            raw = String(raw).trim();
+            if (!raw) throw new Error('译文处理后为空，请重试失败段落');
+
+            IMT.render.insert(item.el, raw, {
+              position: position,
+              wrapperTag: (cfg.render && cfg.render.targetWrapperTag) || 'font',
+              targetLang: targetLang,
+              demo: isDemo
+            });
+            item.state = 'translated';
+            failedItems.delete(item);
+            stats.failed = failedItems.size;
+            stats.done++;
+          } catch (err) {
+            markFailed(item, err);
+          }
         });
         notify();
       }, function (err) {
+        if (stopped) return;
         batch.forEach(function (item) {
-          item.el.classList.add('imtl-error');
-          item.el.setAttribute('data-imtl-error', String((err && err.message) || err || '翻译失败'));
-          IMT.render.clearPending(item.el);
-          stats.failed++;
+          markFailed(item, err);
         });
+        halt(err);
         notify();
       });
     }
@@ -231,7 +278,8 @@
           if (!entry.isIntersecting) return;
           io.unobserve(entry.target);
           var item = registry.get(entry.target);
-          if (!item) return;
+          if (stopped || haltedError || !item || item.state !== 'waiting') return;
+          item.state = 'queued';
           queue.push(item);
           pump();
         });
@@ -245,20 +293,18 @@
       observer = new MutationObserver(function (records) {
         if (stopped) return;
         var fresh = [];
-        var hasOurs = false;
         records.forEach(function (rec) {
           if (selfMutate) return;
           rec.addedNodes.forEach(function (node) {
             if (node.nodeType !== 1) return;
             if (node.classList && (node.classList.contains('imtl-translation') || node.classList.contains('imtl-original'))) {
-              hasOurs = true;
               return;
             }
             if (node.classList && node.classList.contains('imtl-block')) return;
             fresh.push(node);
           });
         });
-        if (hasOurs || !fresh.length) return;
+        if (!fresh.length) return;
         // 去重后扫描
         var seen = new Set();
         var unique = fresh.filter(function (n) {
@@ -300,6 +346,26 @@
         return added.length;
       },
 
+      /** 保留成功译文，只补翻失败段落；设置页修改模型后也可直接使用。 */
+      retryFailed: function () {
+        if (stopped || running || !failedItems.size) return 0;
+        haltedError = null;
+        stats.lastError = null;
+        var items = Array.from(failedItems);
+        failedItems.clear();
+        stats.failed = 0;
+        items.forEach(function (item) {
+          item.el.classList.remove('imtl-error');
+          item.el.removeAttribute('data-imtl-error');
+          IMT.render.markPending(item.el);
+          item.state = 'queued';
+          queue.push(item);
+        });
+        pump();
+        notify();
+        return items.length;
+      },
+
       /** 停止并还原 */
       stop: function () {
         stopped = true;
@@ -307,9 +373,13 @@
         if (observer) { observer.disconnect(); observer = null; }
         queue.length = 0;
         registry.clear();
+        failedItems.clear();
+        haltedError = null;
         IMT.render.restore(root);
         stats.mode = 'none';
         stats.done = 0;
+        stats.failed = 0;
+        stats.lastError = null;
         stats.total = 0;
         stats.pending = 0;
         notify();

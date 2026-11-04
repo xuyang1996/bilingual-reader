@@ -28,7 +28,6 @@
       timer = setTimeout(function () { controller.abort(); }, timeoutMs || 30000);
     }
     return fetch(url, opts).then(function (res) {
-      if (timer) clearTimeout(timer);
       return res.text().then(function (body) {
         var json = null;
         try { json = JSON.parse(body); } catch (e) { /* 非 JSON */ }
@@ -40,10 +39,17 @@
           res: res
         };
       });
+    }).then(function (out) {
+      if (timer) clearTimeout(timer);
+      return out;
     }, function (err) {
       if (timer) clearTimeout(timer);
-      if (err && err.name === 'AbortError') throw new Error('请求超时');
-      throw new Error(err && err.message ? err.message : '网络请求失败');
+      var failure = new Error(err && err.name === 'AbortError'
+        ? '请求超时，请检查网络或在设置中调整超时'
+        : '网络请求失败，请检查网络、接口地址及服务状态');
+      failure.code = err && err.name === 'AbortError' ? 'ENGINE_TIMEOUT' : 'ENGINE_NETWORK';
+      failure.retryable = true;
+      throw failure;
     });
   }
 
@@ -136,15 +142,13 @@
    * 各家接口的译文位置。
    * 顺序即优先级。
    *
-   * 关于 reasoning_content（思维链）：它排在 content 之后，只作为兜底。
-   * 推理模型同时返回 reasoning_content 与 content 时，先命中的是 content，
-   * 所以思维链不会被当成译文；只有模型完全不返回 content 时才会退到它。
+   * 不使用 reasoning_content 兜底：推理被 token 上限截断时，只有思维链
+   * 而没有正式译文，必须报错而不能把思维链显示为翻译成功。
    */
   var EXTRACT_PATHS = [
     'choices.0.message.content',
     'choices.0.text',
     'choices.0.delta.content',
-    'choices.0.message.reasoning_content',
     'output_text',
     'output.0.content.0.text',
     'output.0.content',
@@ -271,6 +275,8 @@
       stream: false
     };
     var reasoning = isReasoningModel(engine.model);
+    // MiniMax M3.1 默认 max 推理；段落翻译使用 low，用户额外参数仍可覆盖。
+    if (/^MiniMax-M3\.1-Flash$/i.test(engine.model || '')) body.reasoning_effort = 'low';
     var role = engine.systemRole || (reasoning ? 'developer' : 'system');
 
     if (role === 'user') {
@@ -486,7 +492,7 @@
     });
     var out = [];
     for (var i = 1; i <= count; i++) {
-      if (typeof map[i] !== 'string') return null;
+      if (typeof map[i] !== 'string' || !map[i].trim()) return null;
       out.push(map[i]);
     }
     return out;
@@ -842,6 +848,8 @@
    */
   var successMemo = {};
   var probePending = {};
+  var failures = {};
+  var cooldowns = {};
   var memoLoaded = false;
   var MEMO_KEY = 'imtl.engine.memo';
 
@@ -878,6 +886,55 @@
       engine.model || '', engine.auth || ''].join('|');
   }
 
+  // 故障隔离包含配置指纹：更换 Key 或参数后立刻允许重新测试。
+  function failureKey(engine) {
+    return memoKey(engine) + '|' + IMT.utils.hashString(JSON.stringify([
+      engine.key || '', engine.headers || {}, engine.extraBody || {}
+    ]));
+  }
+
+  function errorInfo(err) {
+    return {
+      message: String((err && err.message) || err || '翻译失败'),
+      code: (err && err.code) || '',
+      status: (err && err.status) || 0,
+      fatal: !!(err && err.fatal),
+      retryAfter: (err && err.retryAfter) || 0
+    };
+  }
+
+  function apiError(out, engine) {
+    var json = out.json || {};
+    var detail = json.error || {};
+    var base = json.base_resp || {};
+    var message = typeof detail === 'string' ? detail : detail.message;
+    message = String(message || base.status_msg || out.body || '').slice(0, 240);
+    var err = new Error('HTTP ' + out.status + (message ? ': ' + message : ''));
+    err.status = out.status;
+    err.code = 'ENGINE_HTTP';
+    if (/model.{0,100}(not.{0,10}(found|exist|available|support)|no longer|retired|deprecat)|(?:unknown|invalid|unsupported|retired)\s+model|模型.{0,30}(下线|不存在|不可用|不支持)/i.test(message)) {
+      err.code = 'ENGINE_MODEL_UNAVAILABLE';
+      err.message = '模型「' + engine.model + '」不可用或已下线，请在设置页更换模型。' + message;
+      err.fatal = true;
+    } else if (out.status === 402 || /insufficient_quota|insufficient.{0,15}(balance|credit)|余额不足|额度.{0,8}(耗尽|用尽)/i.test(message)) {
+      err.code = 'ENGINE_QUOTA';
+      err.message = '接口额度或余额不足，请检查模型服务账户。' + message;
+      err.fatal = true;
+    } else if (out.status === 401 || out.status === 403) {
+      err.code = 'ENGINE_AUTH';
+      err.message = '接口鉴权失败，请检查 API Key、鉴权方式和模型访问权限。' + message;
+      err.fatal = true;
+    }
+    return err;
+  }
+
+  function waitForCooldown(key) {
+    var delay = (cooldowns[key] || 0) - Date.now();
+    if (delay <= 0) return Promise.resolve();
+    return new Promise(function (resolve) { setTimeout(resolve, delay); })
+      .then(function () { return waitForCooldown(key); });
+  }
+
   /** 把某个下标排到最前面，其余保持原序 */
   function orderWithFirst(list, index) {
     if (typeof index !== 'number' || index < 0 || index >= list.length) {
@@ -907,6 +964,10 @@
       }
 
       var key = memoKey(e);
+      var fk = failureKey(e);
+      if (failures[fk] && failures[fk].until > Date.now()) {
+        return Promise.reject(failures[fk].error);
+      }
 
       return loadMemo().then(function () {
         if (successMemo[key]) return E.ai._doRequest(texts, opts, e, key);
@@ -914,15 +975,19 @@
         var pending = probePending[key];
         if (pending) {
           // 别的请求正在探测地址，等它探完直接走正确的那个
-          return pending.then(function () {
+          var resume = function () {
             return E.ai.request(texts, opts, engine);
-          });
+          };
+          return pending.then(resume, resume);
         }
 
         var p = E.ai._doRequest(texts, opts, e, key);
         probePending[key] = p;
         var clear = function () { delete probePending[key]; };
-        p.then(clear, clear);
+        p.then(clear, function (err) {
+          if (err.fatal) failures[fk] = { error: err, until: Date.now() + Math.max(30000, err.retryAfter || 0) };
+          clear();
+        });
         return p;
       });
     },
@@ -951,10 +1016,39 @@
       var authOrder = orderWithFirst(auths, memo.auth);
       var urlPos = 0, authPos = 0;
       var lastError = null;
+      var retries = 0;
+      var fk = failureKey(e);
+
+      function retry(err, out) {
+        if (retries >= 2) {
+          err.fatal = true;
+          err.message += '；自动重试后仍未恢复，已暂停，请稍后重试失败段落。';
+          throw err;
+        }
+        var value = out && out.res && out.res.headers.get('Retry-After');
+        var delay = value && /^\s*\d+(\.\d+)?\s*$/.test(value)
+          ? Number(value) * 1000 : (value ? Date.parse(value) - Date.now() : 0);
+        delay = Math.max(delay || 0, 1000 * Math.pow(2, retries) + Math.floor(Math.random() * 250));
+        // 不在消息通道里等待数分钟，也不提前重试服务明确要求的长冷却。
+        if (delay > 30000) {
+          err.message += '；服务要求稍后重试，请等待 ' + Math.ceil(delay / 1000) + ' 秒。';
+          err.fatal = true;
+          err.retryAfter = delay;
+          throw err;
+        }
+        retries++;
+        cooldowns[fk] = Math.max(cooldowns[fk] || 0, Date.now() + delay);
+        return attempt();
+      }
 
       function attempt() {
         if (urlPos >= urlOrder.length) {
-          return Promise.reject(lastError || new Error('请求失败'));
+          var err = lastError || new Error('请求失败');
+          if (err.status === 404 || err.status === 405) {
+            err.code = 'ENGINE_ENDPOINT';
+            err.fatal = true;
+          }
+          return Promise.reject(err);
         }
         var urlIdx = urlOrder[urlPos];
         var authIdx = authOrder[Math.min(authPos, authOrder.length - 1)];
@@ -972,20 +1066,22 @@
           full += (full.indexOf('?') >= 0 ? '&' : '?') + auth.query;
         }
 
-        return httpFetch(full, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify(body)
-        }, timeout).then(function (out) {
-          if (!out.ok) {
-            var msg = 'HTTP ' + out.status;
-            var em = out.json && out.json.error;
-            if (em) msg += ': ' + (em.message || JSON.stringify(em).slice(0, 200));
-            else if (out.body) msg += ': ' + out.body.slice(0, 200);
+        return waitForCooldown(fk).then(function () {
+          if (failures[fk] && failures[fk].until > Date.now()) throw failures[fk].error;
+          return httpFetch(full, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+          }, timeout);
+        }).then(function (out) {
+          if (!out.ok || (out.json && (out.json.error || (out.json.base_resp && out.json.base_resp.status_code)))) {
+            var err = apiError(out, e);
+            if (err.code === 'ENGINE_MODEL_UNAVAILABLE' || err.code === 'ENGINE_QUOTA') throw err;
 
-            var err = new Error(msg);
-            err.status = out.status;
-            err.body = out.body;
+            if ([408, 425, 429, 500, 502, 503, 504].indexOf(out.status) >= 0) {
+              err.code = out.status === 429 ? 'ENGINE_RATE_LIMIT' : 'ENGINE_TEMPORARY';
+              return retry(err, out);
+            }
 
             // 鉴权方式不对 → 换一种鉴权再试
             if (out.status === 401 || out.status === 403) {
@@ -1021,15 +1117,16 @@
           saveMemo(key, { url: urlIdx, auth: authIdx });
           return text.trim();
         }, function (netErr) {
-          // 网络错误 → 换下一个候选地址
-          urlPos++;
-          authPos = 0;
-          lastError = netErr;
-          return attempt();
+          // 超时/断网不代表路径错误，始终在原地址进行有限次重试。
+          if (netErr.retryable) return retry(netErr);
+          throw netErr;
         });
       }
 
-      return attempt();
+      return attempt().catch(function (err) {
+        if (err.fatal) failures[fk] = { error: err, until: Date.now() + Math.max(30000, err.retryAfter || 0) };
+        throw err;
+      });
     },
 
     /** 单条 */
@@ -1040,10 +1137,22 @@
     /** 逐条翻译 */
     sequential: function (texts, opts, engine) {
       var out = [];
+      out.errors = [];
       var step = function (i) {
         if (i >= texts.length) return Promise.resolve(out);
         return E.ai.request([texts[i]], opts, engine).then(function (t) {
           out.push(t);
+          return step(i + 1);
+        }, function (err) {
+          out[i] = '';
+          out.errors[i] = errorInfo(err);
+          if (err.fatal) {
+            for (var j = i + 1; j < texts.length; j++) {
+              out[j] = '';
+              out.errors[j] = errorInfo(err);
+            }
+            return out;
+          }
           return step(i + 1);
         });
       };
@@ -1068,9 +1177,7 @@
       }
 
       if (batchSize > 1) {
-        return E.ai.batch(texts, opts, e, batchSize).catch(function () {
-          return E.ai.sequential(texts, opts, e);
-        });
+        return E.ai.batch(texts, opts, e, batchSize);
       }
       return E.ai.sequential(texts, opts, e);
     },
@@ -1078,15 +1185,37 @@
     /** 编号批量协议 */
     batch: function (texts, opts, engine, batchSize) {
       var out = [];
+      out.errors = [];
       var chunk = Math.max(1, batchSize);
       var step = function (i) {
         if (i >= texts.length) return Promise.resolve(out);
         var part = texts.slice(i, i + chunk);
+        if (part.length === 1) {
+          return E.ai.sequential(part, opts, engine).then(append);
+        }
+        function append(result) {
+          result.forEach(function (text, j) {
+            out[i + j] = text;
+            out.errors[i + j] = (result.errors || [])[j] || null;
+          });
+          var fatal = (result.errors || []).filter(function (err) { return err && err.fatal; })[0];
+          if (fatal) {
+            for (var j = i + part.length; j < texts.length; j++) {
+              out[j] = '';
+              out.errors[j] = fatal;
+            }
+            return out;
+          }
+          return step(i + part.length);
+        }
         return E.ai.request(part, opts, engine).then(function (reply) {
           var parsed = parseBatchReply(reply, part.length);
-          if (!parsed) throw new Error('批量回复无法按编号对齐');
-          out = out.concat(parsed);
-          return step(i + part.length);
+          // 只有编号无法对齐时才逐条补翻这一批，HTTP 错误不再放大成 N 个请求。
+          return parsed ? append(parsed) : E.ai.sequential(part, opts, engine).then(append);
+        }, function (err) {
+          var failed = part.map(function () { return ''; });
+          failed.errors = part.map(function () { return errorInfo(err); });
+          return append(failed);
         });
       };
       return step(0);
@@ -1099,6 +1228,7 @@
       extractText: extractText,
       parseSSE: parseSSE,
       parseBatchReply: parseBatchReply,
+      errorInfo: errorInfo,
       stripFences: stripFences,
       buildUrls: buildUrls,
       buildAuths: buildAuths,

@@ -74,6 +74,8 @@ OpenAI, Anthropic Claude, Google Gemini, DeepSeek, Kimi, Qwen, GLM, OpenRouter �
 
 고급 설정에는 인증 방식, system/developer/user 역할, 시간 제한, 일괄 처리 수, temperature, 출력 토큰 한도, 사용자 지정 헤더, 추가 JSON 본문, 응답 경로, 시스템 프롬프트가 있습니다. [로컬 API 테스트 페이지](test/engine.html)에서 요청과 응답을 확인할 수 있습니다. 확장 프로그램 밖에서는 브라우저 CORS 제한이 적용될 수 있습니다.
 
+번역이 실패하면 팝업에 API 오류가 표시됩니다. 설정에서 모델, 인증, 사용 한도를 확인한 후 **重试失败段落**(실패한 문단 재시도)을 누르세요. 성공한 번역은 유지됩니다. 일시적인 네트워크·API 오류는 최대 두 번 재시도하며, 모델·엔드포인트 오류나 지속적인 서비스 장애가 발생하면 후속 요청을 일시 중지합니다. [오류 복구 안내](docs/RELIABILITY.zh-CN.md)(중국어)를 참고하세요.
+
 ## 번역 스타일
 
 | 시나리오 | 중점 사항 |
@@ -173,6 +175,7 @@ python3 test/e2e.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
+python3 test/verify_reliability.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html
@@ -196,7 +199,7 @@ python3 test/build_store_zip.py --ext . --out ../bilingual-reader-store.zip
 - Chrome 내부 페이지와 Chrome 웹 스토어 페이지는 번역할 수 없으며 closed shadow root에는 접근할 수 없습니다.
 - React/Vue가 자주 다시 렌더링하면 번역문이 덮어써질 수 있습니다. 본문 식별은 휴리스틱 방식이므로 특수한 사이트에는 사용자 규칙이 필요할 수 있습니다.
 - API 속도 제한, 사용량, 인증, 가용성은 제공업체에 따라 다릅니다. 모든 API가 모든 고급 설정을 지원하는 것은 아닙니다.
-- 같은 엔진 ID에서 모델이나 프롬프트를 바꾸면 이전 캐시가 재사용될 수 있습니다. 결과를 비교할 때 캐시를 지우세요.
+- 모델, 엔드포인트, 프롬프트, 용어집을 변경하면 별도의 번역 캐시를 자동으로 사용합니다.
 
 [Issues](https://github.com/xuyang1996/bilingual-reader/issues)와 Pull Request를 통한 제보와 기여를 환영합니다. 가능하면 Chrome 버전, 재현 단계, 공개 예제 URL을 포함하세요. API 키나 비공개 페이지 내용은 포함하지 마세요.
 

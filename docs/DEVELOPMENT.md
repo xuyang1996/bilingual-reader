@@ -8,7 +8,7 @@
 
 | 项 | 内容 |
 | --- | --- |
-| 对应版本 | v1.4.0（Chrome MV3） |
+| 对应版本 | v1.4.1（Chrome MV3） |
 | 代码规模 | `src/` 约 6800 行，19 个文件 |
 | 构建 | **无**。纯 classic script，无 npm、无打包器、无 TypeScript |
 | 运行时 | Chrome 96+ |
@@ -151,7 +151,7 @@ Chrome MV3 把代码切成互不共享内存的四个世界，**这是理解整�
   │                    │                              │
   │                    └──────────┬───────────────────┘
   │                               ▼
-  │                        pump()  并发 ≤4（批量模式 ≤2）
+  │                        pump()  并发 ≤2
   │                               ▼
   │                    translateBatch(batch)
   │                       ① pii.encode   → 占位符
@@ -163,7 +163,7 @@ Chrome MV3 把代码切成互不共享内存的四个世界，**这是理解整�
   │                           worker.handleTranslate
   │                       ① 校验引擎是否就绪（没配 → needConfig）
   │                       ② cache.getMany 命中则直接返回
-  │                       ③ withSlot() 全局并发限流（≤8）
+  │                       ③ withSlot() 全局并发限流（≤2）
   │                       ④ engines.dispatch(engine, texts, opts)
   │                              │
   │                       engines.js
@@ -386,7 +386,8 @@ IMT.client.setTransport(function (texts, req) {
   进入视口前 300px 才入队；`io.unobserve()` 保证不重复入队。
 - **增量翻译**：`MutationObserver` 监听 `childList + subtree`。
   **必须过滤自己注入的节点**（`.imtl-translation` / `.imtl-original` / `.imtl-block`），否则会无限自我触发。
-- **并发**：`concurrency = batchSize > 1 ? 2 : 4`。批量模式降并发，因为单次请求里塞了多条文本。
+- **并发**：页面与后台全局并发均不超过 2，避免多标签页或 iframe 同时请求触发限流。
+- **故障恢复**：错误携带 `code/status/fatal`；致命配置错误与重试耗尽会暂停后续调度。`retryFailed()` 保留成功译文，只补翻失败段落。详见[故障修复说明](RELIABILITY.zh-CN.md)。
 - **预过滤**：已翻译过的、**已经是目标语言的**（`U.detectLang` 判定语族相同）直接跳过，不发请求。
 
 #### 一批文本的处理顺序（顺序不能乱）
@@ -397,7 +398,7 @@ IMT.client.setTransport(function (texts, req) {
 ③ pii.decode      占位符 → 原文
 ④ 还原受保护的技术片段（item.parts）
 ⑤ glossary.apply  术语强制替换（提示词没生效时的兜底）
-⑥ trim；空则回退原文
+⑥ trim；空则标记失败，保留原文且不计入成功
 ⑦ render.insert
 ```
 
@@ -452,7 +453,7 @@ base + path                    ← 首选
 base + '/v1' + path            ← 仅 openai 形态且 base 里没有 /vN 段时追加
 ```
 
-**只在 404 / 405 时才换下一个候选。** 429、500 原样报出 —— 乱试地址只会让限流更严重。
+**只在普通路径 404 / 405 时换候选。** 明确表示模型下线的错误直接中止。429、临时服务故障及网络错误在原地址退避重试，最多两次，并遵循 `Retry-After`；耗尽后暂停后续请求，不靠更换路径反复尝试。
 
 #### 鉴权候选（`buildAuths`）
 
@@ -474,7 +475,8 @@ saveMemo(key, { url: urlIdx, auth: authIdx });
 
 ```js
 var pending = probePending[key];
-if (pending) return pending.then(function () { return E.ai.request(texts, opts, engine); });
+if (pending) return pending.then(resume, resume);
+// resume：重新调用 request，让当前文本独立处理；致命故障由配置指纹共享拦截。
 ```
 
 同一引擎的并发请求**共享同一次探测**，不会各自去吃一遍 404。
@@ -483,9 +485,7 @@ if (pending) return pending.then(function () { return E.ai.request(texts, opts, 
 
 17 条取值路径依次尝试，支持 `a.b[0].c` 与 `a.b.0.c` 两种写法。
 
-> **`reasoning_content` 排在 `content` 之后**，只作兜底。
-> 推理模型同时返回思维链与正式译文时，先命中的是 `content`，所以思维链不会进译文。
-> （代码注释曾误写成「不在取值列表里」，已更正。）
+> **`reasoning_content` 不作为译文兜底。** 只有思维链、没有正式译文的响应视为失败，避免把推理截断误报为成功。
 
 值形态统一由 `textFromValue` 处理：字符串 / 字符串数组 / `{text}` / `{content}` / `{parts}` / `[{type:'text',text}]`。
 
@@ -499,7 +499,7 @@ if (pending) return pending.then(function () { return E.ai.request(texts, opts, 
 parseBatchReply(reply, count)  // 解析不出全部 N 条就返回 null
 ```
 
-**返回 null 时 `translate()` 自动回退到逐条请求**，绝不错位。这是「编号对不上自动回退」的落点。
+**返回 null 时，仅对当前小批次回退逐条请求。** HTTP 错误不触发逐条回退。内部返回数组的 `errors` 属性记录逐项错误，后台显式转换为 `{texts, errors}` 发送；管线同时兼容测试使用的普通数组。此前成功的小批次和逐条结果不会因后续局部错误丢失。
 
 #### 推理模型识别
 

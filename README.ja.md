@@ -74,6 +74,8 @@ OpenAI、Anthropic Claude、Google Gemini、DeepSeek、Kimi、Qwen、GLM、OpenR
 
 詳細設定では、認証方式、system/developer/user ロール、タイムアウト、バッチ件数、temperature、出力トークン上限、ヘッダー、追加の JSON 本文、応答パス、システムプロンプトを指定できます。[ローカル API テストページ](test/engine.html)でリクエストと応答を確認できます。拡張機能の外で実行すると、ブラウザーの CORS 制限を受ける場合があります。
 
+翻訳に失敗すると、ポップアップに API エラーを表示します。設定でモデル、認証、利用枠を確認し、**重试失败段落**（失敗した段落を再試行）を押してください。成功した訳文は保持されます。一時的な通信・API エラーは最大 2 回再試行し、モデル・接続先・継続的なサービス障害では後続のリクエストを一時停止します。[障害対応の説明](docs/RELIABILITY.zh-CN.md)（中国語）も参照してください。
+
 ## 翻訳スタイル
 
 | シナリオ | 重視する内容 |
@@ -173,6 +175,7 @@ python3 test/e2e.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
+python3 test/verify_reliability.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html
@@ -196,7 +199,7 @@ python3 test/build_store_zip.py --ext . --out ../bilingual-reader-store.zip
 - Chrome の内部ページと Chrome ウェブストアのページは翻訳できません。closed shadow root にもアクセスできません。
 - React/Vue の頻繁な再描画で訳文が消えることがあります。本文識別はヒューリスティックに基づくため、特殊なサイトでは独自ルールが必要になる場合があります。
 - API のレート制限、利用枠、認証、稼働状況はプロバイダーによって異なります。すべての API がすべての詳細設定に対応するわけではありません。
-- 同じエンジン ID のままモデルやプロンプトを変更すると、以前のキャッシュを再利用することがあります。結果を比較する際はキャッシュを削除してください。
+- モデル、接続先、プロンプト、用語集を変更すると、別の翻訳キャッシュを自動的に使用します。
 
 [Issues](https://github.com/xuyang1996/bilingual-reader/issues) や Pull Request での報告・貢献を歓迎します。可能であれば、Chrome のバージョン、再現手順、公開のサンプル URL を記載してください。API キーや非公開の本文は含めないでください。
 

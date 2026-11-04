@@ -192,6 +192,10 @@ class Handler(BaseHTTPRequestHandler):
             })
             mode = STATE["mode"]
 
+        if mode == "retired-model":
+            return self._json({"error": {"message":
+                'The model "MiniMax-Text-01" is no longer available. (2069)'}}, 404)
+
         # 鉴权：默认要求 Bearer；no-bearer 模式只认 x-api-key
         if mode != "no-auth":
             auth = self.headers.get("Authorization", "")

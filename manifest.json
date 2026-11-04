@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bilingual Reader — 双语对照翻译",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "段落级双语对照网页翻译：智能正文识别、懒翻译、增量翻译、PII 脱敏、术语库、翻译风格场景、可对接各家大模型 API。",
   "minimum_chrome_version": "96",
   "icons": {

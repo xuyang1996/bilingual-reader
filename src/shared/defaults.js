@@ -184,7 +184,7 @@
     { id: 'doubao', name: '豆包 火山方舟', baseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
       path: '/chat/completions', format: 'openai', auth: 'bearer', model: '' },
     { id: 'minimax', name: 'MiniMax', baseUrl: 'https://api.minimaxi.com/v1',
-      path: '/chat/completions', format: 'openai', auth: 'bearer', model: 'MiniMax-Text-01' },
+      path: '/chat/completions', format: 'openai', auth: 'bearer', model: 'MiniMax-M3.1-Flash' },
     { id: 'baichuan', name: '百川智能', baseUrl: 'https://api.baichuan-ai.com/v1',
       path: '/chat/completions', format: 'openai', auth: 'bearer', model: 'Baichuan4' },
     { id: 'siliconflow', name: '硅基流动 SiliconFlow', baseUrl: 'https://api.siliconflow.cn/v1',
@@ -341,5 +341,5 @@
   IMT.DEFAULT_CONFIG = DEFAULT_CONFIG;
   IMT.STORAGE_KEY = 'imtl.config';
   IMT.CACHE_KEY_PREFIX = 'imtl.cache.';
-  IMT.VERSION = '1.4.0';
+  IMT.VERSION = '1.4.1';
 })(typeof globalThis !== 'undefined' ? globalThis : this);

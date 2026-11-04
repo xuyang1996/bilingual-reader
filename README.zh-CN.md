@@ -74,6 +74,8 @@ Bilingual Reader 是一个 Chrome 扩展：识别网页正文，把译文放在�
 
 高级参数包括鉴权方式、system/developer/user 角色、超时、批量条数、温度、输出 token 上限、自定义请求头、额外 JSON 请求体、响应字段路径和系统提示词。[本地接口自测台](test/engine.html)可查看请求与响应细节；在扩展之外运行时可能受浏览器 CORS 限制。
 
+翻译失败时，弹窗会显示接口错误。请先在设置中修正模型、鉴权或额度，再点击 **重试失败段落**，已成功的译文会保留。网络或接口临时故障最多自动重试两次；模型、地址或持续服务故障会暂停后续请求。详见[故障修复说明](docs/RELIABILITY.zh-CN.md)。
+
 ## 翻译风格
 
 | 场景 | 重点 |
@@ -173,6 +175,7 @@ python3 test/e2e.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
+python3 test/verify_reliability.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html
@@ -196,7 +199,7 @@ python3 test/build_store_zip.py --ext . --out ../bilingual-reader-store.zip
 - Chrome 内置页与应用商店页面无法翻译，无法访问 closed shadow root。
 - React/Vue 频繁重渲染可能覆盖译文。正文识别采用启发式规则，特殊站点可能需要自定义适配。
 - 供应商限流、额度、鉴权和服务可用性由供应商决定，各接口不一定支持所有高级参数。
-- 在同一引擎 ID 下切换模型或提示词，可能复用之前的译文缓存；对比结果时请清空缓存。
+- 修改模型、接口地址、提示词或术语库后，会自动使用独立的译文缓存。
 
 欢迎通过 [Issues](https://github.com/xuyang1996/bilingual-reader/issues) 和 Pull Request 反馈或贡献。问题报告请尽量提供 Chrome 版本、复现步骤及公开示例网址，不要附带 API Key 或私密网页正文。
 

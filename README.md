@@ -74,6 +74,8 @@ The engine layer handles URL candidates (including a missing `/v1`), authenticat
 
 Advanced fields include authentication mode, system/developer/user role, timeout, batch size, temperature, output-token limit, custom headers, extra JSON body, response-field path and a custom system prompt. The [local API test bench](test/engine.html) exposes request/response details; browser CORS restrictions may apply outside the extension.
 
+If translation fails, the popup shows the API error. Correct the model, authentication or quota in settings, then click **重试失败段落** (retry failed paragraphs). Successful translations are preserved. Temporary network and API errors receive at most two retries; model, endpoint or persistent service failures pause further requests. See the [reliability notes](docs/RELIABILITY.zh-CN.md) (Chinese).
+
 ## Translation styles
 
 | Scenario | Focus |
@@ -173,6 +175,7 @@ python3 test/e2e.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
+python3 test/verify_reliability.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html
@@ -196,7 +199,7 @@ The store ZIP places `manifest.json` at its root and excludes tests, documentati
 - Chrome internal pages and Chrome Web Store pages cannot be translated. Closed shadow roots cannot be accessed.
 - Frequent React/Vue rerendering may replace injected translations. Content recognition is heuristic; unusual sites may need custom rules.
 - Provider rate limits, quotas, authentication and service availability remain the provider's responsibility. Not every API is compatible with every advanced setting.
-- Switching prompts or a model under the same engine ID may reuse previous cached translations; clear the cache when comparing results.
+- Changes to the model, endpoint, prompts or glossary automatically use a separate translation cache.
 
 Bug reports and contributions are welcome through [Issues](https://github.com/xuyang1996/bilingual-reader/issues) and pull requests. Include the Chrome version, reproduction steps and a public example URL where possible. Remove API keys and private page content from reports.
 

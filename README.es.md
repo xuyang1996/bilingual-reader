@@ -74,6 +74,8 @@ La capa de motores gestiona URLs alternativas (como la ausencia de `/v1`), alter
 
 Las opciones avanzadas incluyen autenticación, rol system/developer/user, tiempo de espera, tamaño del lote, temperature, límite de tokens de salida, cabeceras, cuerpo JSON adicional, ruta de respuesta e instrucciones del sistema. El [banco local de pruebas de API](test/engine.html) muestra los detalles de las solicitudes y respuestas; fuera de la extensión pueden aplicarse las restricciones CORS del navegador.
 
+Si falla la traducción, el panel muestra el error de la API. Corrige el modelo, la autenticación o la cuota en los ajustes y pulsa **重试失败段落** (reintentar párrafos fallidos). Se conservan las traducciones correctas. Los errores temporales de red o de la API se reintentan un máximo de dos veces; los errores de modelo, de dirección o del servicio persistentes detienen las solicitudes siguientes. Consulta las [notas de recuperación](docs/RELIABILITY.zh-CN.md) (en chino).
+
 ## Estilos de traducción
 
 | Escenario | Prioridad |
@@ -173,6 +175,7 @@ python3 test/e2e.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
+python3 test/verify_reliability.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html
@@ -196,7 +199,7 @@ El ZIP de la tienda coloca `manifest.json` en la raíz y excluye pruebas, docume
 - No puede traducir páginas internas de Chrome ni páginas de Chrome Web Store. Tampoco puede acceder a raíces shadow cerradas.
 - Los cambios frecuentes de React/Vue pueden reemplazar las traducciones insertadas. El reconocimiento es heurístico; algunos sitios necesitan reglas específicas.
 - Los límites, las cuotas, la autenticación y la disponibilidad dependen del proveedor. No todas las APIs admiten todas las opciones avanzadas.
-- Al cambiar las instrucciones o el modelo sin cambiar el ID del motor, pueden reutilizarse traducciones anteriores de la caché. Vacíala para comparar resultados.
+- Al cambiar el modelo, el servicio, las instrucciones o el glosario, se utiliza automáticamente una caché de traducción separada.
 
 Puedes informar de errores o contribuir mediante [Issues](https://github.com/xuyang1996/bilingual-reader/issues) y pull requests. Incluye la versión de Chrome, los pasos para reproducir el problema y una URL pública de ejemplo, si es posible. No incluyas claves de API ni contenido privado.
 
