@@ -20,11 +20,19 @@
 
   /** 统一的 fetch 封装，带超时与错误信息 */
   function httpFetch(url, options, timeoutMs) {
+    var signal = options && options.signal;
+    if (signal && signal.aborted) return Promise.reject(IMT.utils.abortError());
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timer = null;
     var opts = Object.assign({}, options || {});
+    function abort() { if (controller) controller.abort(); }
+    function cleanup() {
+      if (timer) clearTimeout(timer);
+      if (signal) signal.removeEventListener('abort', abort);
+    }
     if (controller) {
       opts.signal = controller.signal;
+      if (signal) signal.addEventListener('abort', abort, { once: true });
       timer = setTimeout(function () { controller.abort(); }, timeoutMs || 30000);
     }
     return fetch(url, opts).then(function (res) {
@@ -40,10 +48,12 @@
         };
       });
     }).then(function (out) {
-      if (timer) clearTimeout(timer);
+      cleanup();
+      IMT.utils.throwIfAborted(signal);
       return out;
     }, function (err) {
-      if (timer) clearTimeout(timer);
+      cleanup();
+      if (signal && signal.aborted) throw IMT.utils.abortError();
       var failure = new Error(err && err.name === 'AbortError'
         ? '请求超时，请检查网络或在设置中调整超时'
         : '网络请求失败，请检查网络、接口地址及服务状态');
@@ -928,11 +938,12 @@
     return err;
   }
 
-  function waitForCooldown(key) {
+  function waitForCooldown(key, signal) {
+    IMT.utils.throwIfAborted(signal);
     var delay = (cooldowns[key] || 0) - Date.now();
     if (delay <= 0) return Promise.resolve();
-    return new Promise(function (resolve) { setTimeout(resolve, delay); })
-      .then(function () { return waitForCooldown(key); });
+    return IMT.utils.sleep(delay, signal)
+      .then(function () { return waitForCooldown(key, signal); });
   }
 
   /** 把某个下标排到最前面，其余保持原序 */
@@ -955,6 +966,8 @@
      */
     request: function (texts, opts, engine) {
       var e = normalizeEngine(engine);
+      var signal = opts && opts.signal;
+      if (signal && signal.aborted) return Promise.reject(IMT.utils.abortError());
 
       // 演示模式：不联网，直接在本地拼示例译文
       if (e.format === 'demo') {
@@ -970,6 +983,7 @@
       }
 
       return loadMemo().then(function () {
+        IMT.utils.throwIfAborted(signal);
         if (successMemo[key]) return E.ai._doRequest(texts, opts, e, key);
 
         var pending = probePending[key];
@@ -978,7 +992,10 @@
           var resume = function () {
             return E.ai.request(texts, opts, engine);
           };
-          return pending.then(resume, resume);
+          return IMT.utils.abortable(pending, signal).then(resume, function (err) {
+            IMT.utils.throwIfAborted(signal);
+            return resume();
+          });
         }
 
         var p = E.ai._doRequest(texts, opts, e, key);
@@ -1020,6 +1037,7 @@
       var fk = failureKey(e);
 
       function retry(err, out) {
+        IMT.utils.throwIfAborted(opts.signal);
         if (retries >= 2) {
           err.fatal = true;
           err.message += '；自动重试后仍未恢复，已暂停，请稍后重试失败段落。';
@@ -1066,12 +1084,13 @@
           full += (full.indexOf('?') >= 0 ? '&' : '?') + auth.query;
         }
 
-        return waitForCooldown(fk).then(function () {
+        return waitForCooldown(fk, opts.signal).then(function () {
           if (failures[fk] && failures[fk].until > Date.now()) throw failures[fk].error;
           return httpFetch(full, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: opts.signal
           }, timeout);
         }).then(function (out) {
           if (!out.ok || (out.json && (out.json.error || (out.json.base_resp && out.json.base_resp.status_code)))) {
@@ -1144,6 +1163,7 @@
           out.push(t);
           return step(i + 1);
         }, function (err) {
+          if (err.code === 'ENGINE_CANCELLED') throw err;
           out[i] = '';
           out.errors[i] = errorInfo(err);
           if (err.fatal) {
@@ -1213,6 +1233,7 @@
           // 只有编号无法对齐时才逐条补翻这一批，HTTP 错误不再放大成 N 个请求。
           return parsed ? append(parsed) : E.ai.sequential(part, opts, engine).then(append);
         }, function (err) {
+          if (err.code === 'ENGINE_CANCELLED') throw err;
           var failed = part.map(function () { return ''; });
           failed.errors = part.map(function () { return errorInfo(err); });
           return append(failed);

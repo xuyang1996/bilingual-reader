@@ -7,6 +7,7 @@ Run: python3 test/verify_reliability.py --ext .
 import argparse
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -57,6 +58,9 @@ def main():
         if args.source_ref:
             print(f'\n{sum(results)} passed / {len(results) - sum(results)} failed', flush=True)
             return 0 if all(results) else 1
+
+        for result in evaluate((pathlib.Path(__file__).parent / 'controls.js').read_text()):
+            check(result['ok'], result['name'], result.get('error', ''))
 
         ws.call('Page.enable', {}, session)
         ws.call('Page.navigate', {'url': 'http://127.0.0.1:8766/bilingual-reader/test/harness.html'}, session)
@@ -113,7 +117,7 @@ def main():
         action('retry')
         for _ in range(100):
             state = action('query')
-            if state.get('done', 0) > 10 and not state.get('pending'):
+            if state.get('done', 0) > 10 and not state.get('pending') and mock.requests()['requests']:
                 break
             time.sleep(.1)
         check(state.get('done', 0) > 10 and state.get('failed') == 0 and not state.get('error'),
@@ -136,6 +140,79 @@ def main():
         third = translate()
         check(third.get('ok') and len(mock.requests()['requests']) == count + 1,
               'changing model invalidates old-model translation cache')
+
+        mock.set_mode('slow-openai')
+        testenv.write_engine(ws, worker, mock.engine(model='controls-model'),
+            {'cache': {'enabled': True}, 'lazy': False, 'incremental': False})
+        action('start')
+        for _ in range(100):
+            state = action('query')
+            if state.get('done', 0) >= 3 and state.get('pending'):
+                break
+            time.sleep(.05)
+        evaluate("document.getElementById('pause').click()", popup)
+        time.sleep(.1)
+        state = action('query')
+        check(state.get('paused') and state.get('done', 0) >= 3 and not state.get('pending'),
+              'popup pauses real HTTP translation while preserving completed paragraphs', state)
+        paused_done = state.get('done')
+        paused_requests = len(mock.requests()['requests'])
+        time.sleep(.6)
+        after = action('query')
+        check(after.get('done') == paused_done and not after.get('failed') and len(mock.requests()['requests']) == paused_requests,
+              'paused extension sends no further HTTP requests or late DOM updates')
+
+        ws.call('Target.closeTarget', {'targetId': popup_target})
+        popup_target = ws.call('Target.createTarget', {'url': f'chrome-extension://{ext_id}/src/popup/popup.html'})['targetId']
+        popup = ws.call('Target.attachToTarget', {'targetId': popup_target, 'flatten': True})['sessionId']
+        ws.call('Target.activateTarget', {'targetId': target})
+        time.sleep(.5)
+        check(evaluate("document.getElementById('pause').textContent === '继续' && !document.getElementById('pause').disabled", popup),
+              'closing and reopening popup preserves pause state and Continue button')
+        mock.set_mode('openai-string')
+        evaluate("document.getElementById('pause').click()", popup)
+        for _ in range(100):
+            state = action('query')
+            if not state.get('pending') and not state.get('paused'):
+                break
+            time.sleep(.05)
+        check(state.get('done') == state.get('total') and not state.get('failed'),
+              'Continue completes the same page with correct counts', state)
+        check(evaluate("document.querySelectorAll('.imtl-original .imtl-original, .imtl-translation .imtl-translation').length") == 0,
+              'resuming does not nest original or translation wrappers')
+
+        # Capture the first source paragraph from the existing DOM, then restart
+        # from a scrolled page whose translations are already cached.
+        first_original = evaluate("document.querySelector('.imtl-original').textContent.trim()")
+        mock.reset()
+        evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        evaluate("document.getElementById('retranslate').click()", popup)
+        for _ in range(100):
+            state = action('query')
+            if state.get('done', 0) > 10 and not state.get('pending') and mock.requests()['requests']:
+                break
+            time.sleep(.05)
+        requests = mock.requests()['requests']
+        check(state.get('done') == state.get('total') and not state.get('failed') and len(requests) == state.get('total'),
+              'Retranslate bypasses existing cache and translates every paragraph again', len(requests))
+        check(requests and re.sub(r'\s+', ' ', requests[0]['body']['messages'][-1]['content']).strip() == re.sub(r'\s+', ' ', first_original) and evaluate('window.scrollY') == 0,
+              'Retranslate starts at the first paragraph and returns to page top')
+
+        mock.set_mode('slow-openai')
+        evaluate("document.getElementById('retranslate').click()", popup)
+        time.sleep(.1)
+        evaluate("document.getElementById('pause').click()", popup)
+        time.sleep(.1)
+        check(action('query').get('paused'), 'retranslation itself supports pause')
+        mock.set_mode('openai-string')
+        evaluate("document.getElementById('retranslate').click()", popup)
+        for _ in range(100):
+            state = action('query')
+            if state.get('done', 0) > 10 and not state.get('pending'):
+                break
+            time.sleep(.05)
+        check(not state.get('paused') and not state.get('failed') and state.get('done') == state.get('total'),
+              'Retranslate while paused creates a fresh session without stale work')
 
         print(f'\n{sum(results)} passed / {len(results) - sum(results)} failed', flush=True)
         return 0 if all(results) else 1

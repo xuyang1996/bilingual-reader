@@ -445,7 +445,7 @@
 
 | 入口 | 能力 |
 | --- | --- |
-| **Popup 控制面板** | 翻译/还原按钮、三种显示模式、目标语言下拉（17 种可译语言）、翻译引擎下拉、当前翻译风格、实时状态（已译段数 / 失败数）、跳转设置页 |
+| **Popup 控制面板** | 翻译/还原按钮、暂停/继续、重新翻译、失败段落补翻、三种显示模式、目标语言下拉（17 种可译语言）、翻译引擎下拉、当前翻译风格、实时状态（已译段数 / 失败数）、跳转设置页 |
 | **快捷键** | `Alt+T` 翻译/还原当前页；`Alt+Shift+T` 翻译当前页；`Alt+Shift+R` 还原当前页 |
 | **右键菜单** | 「翻译本页（双语对照）」「还原本页」「仅显示译文」「仅显示原文」 |
 | **设置页** | 左侧 8 分类导航（翻译引擎 / 翻译风格 / 正文识别 / 译文样式 / 站点规则 / 术语库 / 隐私与缓存 / 数据与关于），`sessionStorage` 记住上次所在面板 |
@@ -530,12 +530,13 @@
 
 | 类型 | 载荷 | 说明 |
 | --- | --- | --- |
-| `IMT_TRANSLATE` | `texts[]` + 语向 + 引擎 id + 场景 | 翻译一批文本块 |
+| `IMT_TRANSLATE` | `texts[]` + 语向 + 引擎 id + `requestId` + `bypassCache` | 翻译一批文本块；场景由后台根据配置和当前网址解析 |
+| `IMT_CANCEL_TRANSLATION` | `requestId` | 取消同一标签页、frame 中对应的排队或在途请求 |
 | `IMT_STATE_REPORT` | 进度统计 | 向 popup 上报「已译 N 段 / 失败 M 段」 |
 
 ### 7.2 后台 / popup → 内容脚本
 
-指令 `action`：`start` / `stop` / `toggle` / `setMode` / `setLang` / `setEngine` / `query`。
+指令 `action`：`start` / `stop` / `toggle` / `pause` / `resume` / `retranslate` / `retry` / `setMode` / `setLang` / `setEngine` / `query`。暂停保留已有译文，继续从暂停位置的上一段开始；重译清除本页译文、从第一段开始重新请求，不读旧缓存。
 
 ### 7.3 设置页 / popup → 后台
 

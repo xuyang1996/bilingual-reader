@@ -48,20 +48,42 @@
   function installTransport() {
     IMT.client.setTransport(function (texts, req) {
       return new Promise(function (resolve, reject) {
+        var requestId = U.uid('translation');
+        var signal = req.signal;
+        var settled = false;
+        function finish(err, result) {
+          if (settled) return;
+          settled = true;
+          if (signal) signal.removeEventListener('abort', abort);
+          if (err) reject(err);
+          else resolve(result);
+        }
+        function abort() {
+          finish(U.abortError());
+          try {
+            chrome.runtime.sendMessage({ type: 'IMT_CANCEL_TRANSLATION', requestId: requestId }, function () {
+              void chrome.runtime.lastError;
+            });
+          } catch (e) { /* 扩展重新加载时，通道可能已经关闭 */ }
+        }
+        if (signal && signal.aborted) { finish(U.abortError()); return; }
+        if (signal) signal.addEventListener('abort', abort, { once: true });
         try {
           chrome.runtime.sendMessage({
             type: 'IMT_TRANSLATE',
+            requestId: requestId,
+            bypassCache: !!req.bypassCache,
             texts: texts,
             sourceLang: req.sourceLang,
             targetLang: req.targetLang,
             engineId: req.engineId
           }, function (res) {
             if (chrome.runtime.lastError) {
-              reject(new Error(chrome.runtime.lastError.message || '后台通信失败'));
+              finish(new Error(chrome.runtime.lastError.message || '后台通信失败'));
               return;
             }
             if (!res) {
-              reject(new Error('后台无响应'));
+              finish(new Error('后台无响应'));
               return;
             }
             if (!res.ok) {
@@ -69,13 +91,13 @@
               err.code = res.code;
               err.status = res.status;
               err.fatal = !!res.fatal;
-              reject(err);
+              finish(err);
               return;
             }
-            resolve({ texts: res.texts || [], errors: res.errors || [] });
+            finish(null, { texts: res.texts || [], errors: res.errors || [] });
           });
         } catch (e) {
-          reject(e);
+          finish(e);
         }
       });
     });
@@ -113,7 +135,8 @@
         rule: rule,
         config: cfg,
         engineId: cfg.engine,
-        lazy: cfg.lazy !== false,
+        lazy: options.retranslate ? false : cfg.lazy !== false,
+        bypassCache: !!options.retranslate,
         onProgress: function (stats) {
           currentMode = stats.mode === 'none' ? 'none' : 'translated';
           reportState(stats);
@@ -121,6 +144,7 @@
       });
 
       IMT.render.setMode(rule.translationMode || 'dual');
+      if (options.retranslate) window.scrollTo(0, 0);
       controller.start();
       lastError = null;
       return reportState(controller.getStats());
@@ -176,6 +200,9 @@
       total: stats ? stats.total : 0,
       failed: stats ? stats.failed : 0,
       pending: stats ? stats.pending : 0,
+      waiting: stats ? stats.waiting : 0,
+      paused: !!(stats && stats.paused),
+      canPause: !!(stats && stats.canPause),
       error: (stats && stats.failed && stats.lastError) || lastError
     };
     try {
@@ -206,6 +233,18 @@
         lastError = null;
         controller.retryFailed();
         return reportState(controller.getStats());
+      case 'pause':
+        if (!controller) return { ok: false, error: '页面尚未翻译' };
+        controller.pause();
+        return reportState(controller.getStats());
+      case 'resume':
+        if (!controller) return { ok: false, error: '页面尚未翻译' };
+        controller.resume();
+        return reportState(controller.getStats());
+      case 'retranslate':
+        var mode = IMT.render.getMode();
+        return startTranslation({ retranslate: true,
+          mode: IMT.render.MODES.indexOf(mode) >= 0 ? mode : undefined });
       case 'setMode':
         return setMode(opts.mode || msg.mode);
       case 'setLang':

@@ -57,6 +57,9 @@
       cursor: pointer;
     }
     button:hover { border-color: var(--accent); }
+    button:disabled { cursor: not-allowed; opacity: 0.55; }
+    .translation-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .translation-actions button { flex: 1; }
     button.primary {
       background: var(--accent);
       border-color: var(--accent);
@@ -197,6 +200,10 @@
   </div>
 
   <button class="primary" id="toggle">翻译此页</button>
+  <div class="translation-actions">
+    <button id="pause" disabled title="暂停请求，保留已有译文；继续时从暂停位置的上一段接着翻译">暂停</button>
+    <button id="retranslate" disabled title="清除本页译文，跳过旧缓存，从第一段重新翻译">重新翻译</button>
+  </div>
 
   <div class="row">
     <label>显示模式</label>

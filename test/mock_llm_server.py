@@ -26,6 +26,7 @@ import json
 import re
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 STATE = {
@@ -141,6 +142,12 @@ def gemini_reply(content, prefix="译:"):
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
+    def handle(self):
+        try:
+            super().handle()
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # A cancelled fetch can also close a keep-alive connection.
+
     def log_message(self, *a):        # 静音
         pass
 
@@ -150,7 +157,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
-        self.wfile.write(raw)
+        try:
+            self.wfile.write(raw)
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # Pause/restore intentionally aborts HTTP requests.
 
     def _text(self, raw, code=200, ctype="application/json; charset=utf-8"):
         if isinstance(raw, str):
@@ -195,6 +205,9 @@ class Handler(BaseHTTPRequestHandler):
         if mode == "retired-model":
             return self._json({"error": {"message":
                 'The model "MiniMax-Text-01" is no longer available. (2069)'}}, 404)
+
+        if mode == "slow-openai":
+            time.sleep(.2)
 
         # 鉴权：默认要求 Bearer；no-bearer 模式只认 x-api-key
         if mode != "no-auth":

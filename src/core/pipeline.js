@@ -68,6 +68,10 @@
     var queue = [];
     var running = 0;
     var stopped = false;
+    var paused = false;
+    var generation = 0;
+    var activeBatches = new Set();
+    var resumeItem = null;
     var io = null;
     var observer = null;
     var selfMutate = false;
@@ -81,8 +85,16 @@
 
     /* ---------------- 进度 ---------------- */
 
+    function updateStats() {
+      stats.pending = paused || stopped ? 0 : queue.length + running;
+      stats.waiting = 0;
+      registry.forEach(function (item) { if (item.state === 'waiting') stats.waiting++; });
+      stats.paused = paused;
+      stats.canPause = !stopped && !paused && !haltedError && !!(stats.pending || stats.waiting);
+    }
+
     function notify() {
-      stats.pending = queue.length + running;
+      updateStats();
       if (typeof c.onProgress === 'function') {
         try { c.onProgress(Object.assign({}, stats)); } catch (e) { /* ignore */ }
       }
@@ -137,13 +149,15 @@
 
       if (lazy && typeof IntersectionObserver !== 'undefined') {
         usable.forEach(function (item) {
-          IMT.render.markPending(item.el);
           item.state = 'waiting';
-          io.observe(item.el);
+          if (!paused) {
+            IMT.render.markPending(item.el);
+            io.observe(item.el);
+          }
         });
       } else {
         usable.forEach(function (item) {
-          IMT.render.markPending(item.el);
+          if (!paused) IMT.render.markPending(item.el);
           item.state = 'queued';
           queue.push(item);
         });
@@ -161,19 +175,42 @@
     }
 
     function pump() {
-      while (!stopped && !haltedError && running < concurrency && queue.length) {
-        var batch = queue.splice(0, batchSize);
-        batch.forEach(function (item) { item.state = 'running'; });
-        running++;
-        translateBatch(batch)
-          .catch(function () { /* 错误已在 translateBatch 内处理 */ })
-          .then(function () {
-            running--;
-            pump();
-            notify();
-          });
+      while (!stopped && !paused && !haltedError && running < concurrency && queue.length) {
+        runBatch(queue.splice(0, batchSize));
       }
       notify();
+    }
+
+    function runBatch(batch) {
+      var task = { generation: generation, abort: new AbortController(), items: batch };
+      batch.forEach(function (item) { item.state = 'running'; });
+      activeBatches.add(task);
+      running = activeBatches.size;
+      translateBatch(batch, task)
+        .catch(function () { /* 错误已在 translateBatch 内处理 */ })
+        .then(function () {
+          if (!activeBatches.delete(task)) return;
+          running = activeBatches.size;
+          pump();
+        });
+    }
+
+    function cancelActive() {
+      generation++;
+      activeBatches.forEach(function (task) {
+        task.items.forEach(function (item) { if (item.state === 'running') item.state = 'queued'; });
+        task.abort.abort();
+      });
+      activeBatches.clear();
+      running = 0;
+    }
+
+    function orderedItems() {
+      return Array.from(registry.values()).filter(function (item) { return item.el.isConnected; })
+        .sort(function (a, b) {
+          var position = a.el.compareDocumentPosition(b.el);
+          return position & 4 ? -1 : position & 2 ? 1 : 0;
+        });
     }
 
     /* ---------------- 单批翻译 ---------------- */
@@ -200,7 +237,7 @@
       });
     }
 
-    function translateBatch(batch) {
+    function translateBatch(batch, task) {
       var usePII = !!(cfg.pii && cfg.pii.enabled);
       var encoded = batch.map(function (item) {
         if (usePII) {
@@ -214,11 +251,13 @@
         texts: encoded.map(function (e) { return e.text; }),
         sourceLang: sourceLang,
         targetLang: targetLang,
-        engineId: engineId
+        engineId: engineId,
+        signal: task.abort.signal,
+        bypassCache: !!c.bypassCache || batch.some(function (item) { return !!item.forceRefresh; })
       };
 
       return I.client.translate(req.texts, req).then(function (res) {
-        if (stopped) return;
+        if (stopped || paused || task.generation !== generation) return;
         var list = Array.isArray(res) ? res : ((res && res.texts) || []);
         var errors = (res && res.errors) || [];
         batch.forEach(function (item, i) {
@@ -253,14 +292,16 @@
             item.state = 'translated';
             failedItems.delete(item);
             stats.failed = failedItems.size;
-            stats.done++;
+            item.forceRefresh = false;
+            if (!item.completed) stats.done++;
+            item.completed = true;
           } catch (err) {
             markFailed(item, err);
           }
         });
         notify();
       }, function (err) {
-        if (stopped) return;
+        if (stopped || paused || task.generation !== generation) return;
         batch.forEach(function (item) {
           markFailed(item, err);
         });
@@ -278,7 +319,7 @@
           if (!entry.isIntersecting) return;
           io.unobserve(entry.target);
           var item = registry.get(entry.target);
-          if (stopped || haltedError || !item || item.state !== 'waiting') return;
+          if (stopped || paused || haltedError || !item || item.state !== 'waiting') return;
           item.state = 'queued';
           queue.push(item);
           pump();
@@ -346,9 +387,53 @@
         return added.length;
       },
 
+      /** 暂停并记录最早未完成段落的上一段，保留已完成译文。 */
+      pause: function () {
+        updateStats();
+        if (!stats.canPause) return controller;
+        var items = orderedItems().filter(function (item) { return item.state !== 'skipped'; });
+        var index = items.findIndex(function (item) { return item.state === 'running' || item.state === 'queued'; });
+        if (index < 0) index = items.findIndex(function (item) { return item.state === 'waiting'; });
+        resumeItem = items[Math.max(0, index - 1)] || null;
+        paused = true;
+        if (io) io.disconnect();
+        cancelActive();
+        registry.forEach(function (item) { IMT.render.clearPending(item.el); });
+        notify();
+        return controller;
+      },
+
+      /** 从暂停位置的上一段补接；已完成的更早段落保持原样。 */
+      resume: function () {
+        if (stopped || !paused) return controller;
+        paused = false;
+        var anchor = resumeItem && resumeItem.el.isConnected ? resumeItem : null;
+        if (anchor) {
+          if (anchor.completed) { anchor.completed = false; stats.done--; }
+          anchor.state = 'queued';
+          anchor.forceRefresh = true;
+          failedItems.delete(anchor);
+          anchor.el.classList.remove('imtl-error');
+          anchor.el.removeAttribute('data-imtl-error');
+        }
+        resumeItem = null;
+        stats.failed = failedItems.size;
+        queue = orderedItems().filter(function (item) { return item.state === 'queued'; });
+        ensureObserver();
+        registry.forEach(function (item) {
+          if (item.state === 'queued') IMT.render.markPending(item.el);
+          if (item.state === 'waiting' && io) {
+            IMT.render.markPending(item.el);
+            io.observe(item.el);
+          }
+        });
+        pump();
+        return controller;
+      },
+
       /** 保留成功译文，只补翻失败段落；设置页修改模型后也可直接使用。 */
       retryFailed: function () {
-        if (stopped || running || !failedItems.size) return 0;
+        if (stopped || paused || running || !failedItems.size) return 0;
         haltedError = null;
         stats.lastError = null;
         var items = Array.from(failedItems);
@@ -369,6 +454,9 @@
       /** 停止并还原 */
       stop: function () {
         stopped = true;
+        paused = false;
+        resumeItem = null;
+        cancelActive();
         if (io) { io.disconnect(); io = null; }
         if (observer) { observer.disconnect(); observer = null; }
         queue.length = 0;
@@ -394,7 +482,8 @@
       },
 
       getStats: function () {
-        return Object.assign({}, stats, { pending: queue.length + running, count: IMT.render.count(root) });
+        updateStats();
+        return Object.assign({}, stats, { count: IMT.render.count(root) });
       },
 
       isStopped: function () { return stopped; }

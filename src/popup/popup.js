@@ -184,8 +184,12 @@
   function renderPage(state) {
     page = state || {};
     var translated = page.state === 'translated';
+    $('pause').textContent = page.paused ? '继续' : '暂停';
+    $('pause').disabled = !translated || (!page.paused && !page.canPause);
+    $('pause').setAttribute('aria-pressed', page.paused ? 'true' : 'false');
+    $('retranslate').disabled = !readyEngineId();
     $('retry').hidden = !page.failed;
-    $('retry').disabled = !!page.pending;
+    $('retry').disabled = !!page.pending || !!page.paused;
     $('toggle').textContent = translated ? '还原本页' : '翻译此页';
     if (page.error) {
       renderStatus('已译 ' + (page.done || 0) + ' 段 · 失败 ' + (page.failed || 0) + '。' + page.error, true);
@@ -193,6 +197,7 @@
       var bits = [];
       if (typeof page.done === 'number') bits.push('已译 ' + page.done + ' 段');
       if (typeof page.failed === 'number' && page.failed) bits.push('失败 ' + page.failed);
+      if (page.paused) bits.push('已暂停 · 点击继续，从上一段接着翻译');
       renderStatus(bits.length ? bits.join(' · ') : '翻译中…', false);
     } else {
       renderStatus('尚未翻译 · 点击上方按钮开始', false);
@@ -336,6 +341,21 @@
     });
 
     $('toggle').addEventListener('click', togglePage);
+    function controlTranslation(action) {
+      $('pause').disabled = true;
+      $('retranslate').disabled = true;
+      return pageAction(action).then(function (res) {
+        if (res && res.ok) renderPage(res);
+        else {
+          renderPage(page);
+          renderStatus((res && res.error) || '操作失败', true);
+        }
+      });
+    }
+    $('pause').addEventListener('click', function () {
+      controlTranslation(page && page.paused ? 'resume' : 'pause');
+    });
+    $('retranslate').addEventListener('click', function () { controlTranslation('retranslate'); });
     $('retry').addEventListener('click', function () {
       $('retry').disabled = true;
       pageAction('retry').then(function (res) {

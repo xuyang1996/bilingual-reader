@@ -38,6 +38,8 @@ No necesita compilación, instalación con npm ni un entorno de ejecución de te
 5. Abre una página web normal y pulsa el icono de la extensión → **Traducir esta página (`翻译此页`)**.
 6. Selecciona el idioma de destino en el panel. El predeterminado es chino simplificado; la lista incluye 17 idiomas de destino.
 
+Debajo del botón principal, **Pausar (`暂停`)** conserva las traducciones y cancela el trabajo activo y en espera. Cambia a **Continuar (`继续`)**, que retoma la traducción desde el párrafo anterior al punto de pausa. **Volver a traducir (`重新翻译`)** borra las traducciones de esta página y empieza desde el primer párrafo sin reutilizar la caché anterior. **Restaurar (`还原本页`)** elimina las traducciones y termina la sesión.
+
 Una instalación nueva **no tiene ningún motor configurado**. La traducción real necesita un servicio de modelos que funcione. La extensión no proporciona un servicio de traducción alojado ni créditos de API. El proveedor puede cobrar por las solicitudes.
 
 ### Probar sin clave de API

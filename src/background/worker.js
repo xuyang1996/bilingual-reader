@@ -50,15 +50,22 @@ importScripts(
 
   function release() {
     active--;
-    if (active < MAX_ACTIVE && waiters.length) {
+    while (active < MAX_ACTIVE && waiters.length) {
       var fn = waiters.shift();
       fn();
     }
   }
 
-  function withSlot(fn) {
+  function withSlot(fn, signal) {
     return new Promise(function (resolve, reject) {
+      function abort() {
+        var index = waiters.indexOf(run);
+        if (index >= 0) waiters.splice(index, 1);
+        reject(U.abortError());
+      }
       var run = function () {
+        if (signal) signal.removeEventListener('abort', abort);
+        if (signal && signal.aborted) { reject(U.abortError()); return; }
         active++;
         var p;
         try {
@@ -68,8 +75,12 @@ importScripts(
         }
         p.then(resolve, reject).then(release, release);
       };
+      if (signal && signal.aborted) { reject(U.abortError()); return; }
       if (active < MAX_ACTIVE) run();
-      else waiters.push(run);
+      else {
+        waiters.push(run);
+        if (signal) signal.addEventListener('abort', abort, { once: true });
+      }
     });
   }
 
@@ -101,8 +112,9 @@ importScripts(
    * 翻译
    * ------------------------------------------------------------------ */
 
-  function handleTranslate(msg, sender) {
+  function handleTranslate(msg, sender, signal) {
     return loadConfig().then(function (cfg) {
+      U.throwIfAborted(signal);
       var engineId = msg.engineId || cfg.engine;
       var engine = (cfg.engines || {})[engineId];
 
@@ -155,13 +167,14 @@ importScripts(
       var callEngine = function (list) {
         return withSlot(function () {
           return IMT.engines.dispatch(engine, list, {
+            signal: signal,
             sourceLang: sourceLang,
             targetLang: targetLang,
             glossary: cfg.glossary || [],
             scenario: scenario,
             customScenarios: cfg.customScenarios || {}
           });
-        });
+        }, signal);
       };
 
       if (!useCache) {
@@ -180,7 +193,8 @@ importScripts(
         return IMT.cache.key(t, sourceLang, targetLang, cacheEngine);
       });
 
-      return IMT.cache.getMany(keys).then(function (cached) {
+      return (msg.bypassCache ? Promise.resolve({}) : IMT.cache.getMany(keys)).then(function (cached) {
+        U.throwIfAborted(signal);
         var result = new Array(texts.length);
         var errors = new Array(texts.length);
         var missingIdx = [];
@@ -199,6 +213,7 @@ importScripts(
         if (!missingText.length) return { ok: true, texts: result };
 
         return callEngine(missingText).then(function (translated) {
+          U.throwIfAborted(signal);
           var toCache = {};
           missingIdx.forEach(function (idx, i) {
             var val = (translated && typeof translated[i] === 'string' && translated[i]) ? translated[i] : '';
@@ -289,13 +304,30 @@ importScripts(
    * 消息路由
    * ------------------------------------------------------------------ */
 
+  var pendingRequests = new Map();
+  function requestKey(msg, sender) {
+    return [(sender.tab && sender.tab.id) || '', sender.frameId || 0, msg.requestId].join(':');
+  }
+
   chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     if (!msg || !msg.type) return false;
 
     switch (msg.type) {
       case 'IMT_TRANSLATE':
-        handleTranslate(msg, sender).then(sendResponse);
+        var controller = new AbortController();
+        var key = requestKey(msg, sender);
+        if (msg.requestId) pendingRequests.set(key, controller);
+        handleTranslate(msg, sender, controller.signal).then(function (result) {
+          if (msg.requestId) pendingRequests.delete(key);
+          sendResponse(result);
+        });
         return true;
+
+      case 'IMT_CANCEL_TRANSLATION':
+        var request = pendingRequests.get(requestKey(msg, sender));
+        if (request) request.abort();
+        sendResponse({ ok: true });
+        return false;
 
       case 'IMT_TEST_ENGINE':
         handleTestEngine(msg).then(sendResponse);

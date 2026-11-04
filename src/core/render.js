@@ -42,6 +42,9 @@
       if (exist) {
         exist.innerHTML = R.toHtml(text);
       }
+      R.clearPending(el);
+      el.classList.remove('imtl-error');
+      el.removeAttribute('data-imtl-error');
       return exist || null;
     }
 
@@ -84,12 +87,13 @@
   R.markPending = function (el) {
     if (!el) return;
     el.classList.add('imtl-pending');
-    el.setAttribute('data-imtl-state', 'pending');
+    if (!R.isTranslated(el)) el.setAttribute('data-imtl-state', 'pending');
   };
 
   R.clearPending = function (el) {
     if (!el) return;
     el.classList.remove('imtl-pending');
+    if (!el.getAttribute('class')) el.removeAttribute('class');
     if (el.getAttribute('data-imtl-state') === 'pending') {
       el.removeAttribute('data-imtl-state');
     }

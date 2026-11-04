@@ -341,5 +341,5 @@
   IMT.DEFAULT_CONFIG = DEFAULT_CONFIG;
   IMT.STORAGE_KEY = 'imtl.config';
   IMT.CACHE_KEY_PREFIX = 'imtl.cache.';
-  IMT.VERSION = '1.4.1';
+  IMT.VERSION = '1.4.2';
 })(typeof globalThis !== 'undefined' ? globalThis : this);

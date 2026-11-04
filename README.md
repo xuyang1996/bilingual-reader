@@ -38,6 +38,8 @@ No build step, npm installation or third-party runtime is required. The extensio
 5. Open a regular webpage and click the extension icon → **Translate this page (`翻译此页`)**.
 6. Choose your target language in the popup. The default target is Simplified Chinese; 17 target languages are listed.
 
+Below the main button, **Pause (`暂停`)** keeps existing translations and cancels active and queued work. It becomes **Continue (`继续`)**, which resumes from the paragraph immediately before the pause point. **Retranslate (`重新翻译`)** clears this page's translations and starts again from the first paragraph, bypassing old cache. **Restore (`还原本页`)** removes translations and ends the session.
+
 A fresh installation has **no configured engine**. Real translation requires a working model endpoint; the extension supplies no hosted translation service or API credits. Your provider may charge for requests.
 
 ### Try it without an API key

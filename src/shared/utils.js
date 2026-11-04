@@ -250,8 +250,48 @@
     };
   };
 
-  U.sleep = function (ms) {
-    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  U.abortError = function () {
+    var err = new Error('翻译已取消');
+    err.name = 'AbortError';
+    err.code = 'ENGINE_CANCELLED';
+    return err;
+  };
+
+  U.throwIfAborted = function (signal) {
+    if (signal && signal.aborted) throw U.abortError();
+  };
+
+  U.abortable = function (promise, signal) {
+    if (!signal) return promise;
+    return new Promise(function (resolve, reject) {
+      function abort() { reject(U.abortError()); }
+      if (signal.aborted) abort();
+      else signal.addEventListener('abort', abort, { once: true });
+      Promise.resolve(promise).then(function (value) {
+        signal.removeEventListener('abort', abort);
+        resolve(value);
+      }, function (err) {
+        signal.removeEventListener('abort', abort);
+        reject(err);
+      });
+    });
+  };
+
+  U.sleep = function (ms, signal) {
+    return new Promise(function (resolve, reject) {
+      function abort() {
+        clearTimeout(timer);
+        reject(U.abortError());
+      }
+      var timer = setTimeout(function () {
+        if (signal) signal.removeEventListener('abort', abort);
+        resolve();
+      }, ms);
+      if (signal) {
+        if (signal.aborted) abort();
+        else signal.addEventListener('abort', abort, { once: true });
+      }
+    });
   };
 
   /** 生成短 id */
