@@ -333,6 +333,13 @@ importScripts(
         handleTestEngine(msg).then(sendResponse);
         return true;
 
+      case 'IMT_OPEN_OPTIONS':
+        chrome.runtime.openOptionsPage(function () {
+          var error = chrome.runtime.lastError;
+          sendResponse(error ? { ok: false, error: error.message } : { ok: true });
+        });
+        return true;
+
       case 'IMT_STATE_REPORT':
         // 内容脚本上报状态，popup 也会直接询问内容脚本，这里仅作记录
         return false;

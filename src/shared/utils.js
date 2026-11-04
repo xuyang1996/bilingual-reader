@@ -300,6 +300,62 @@
     return (prefix || 'id') + '-' + Date.now().toString(36) + '-' + U._seq;
   };
 
+  /* 浮签使用独立偏好键：拖动位置不会覆盖开关，也不会改动引擎配置。 */
+  U.floatingPrefs = {
+    normalize: function (data) {
+      var p = data && data.position;
+      return {
+        enabled: !data || data.enabled !== false,
+        position: p && Number.isFinite(p.x) && Number.isFinite(p.y)
+          ? { x: Math.max(0, Math.min(1, p.x)), y: Math.max(0, Math.min(1, p.y)) } : null
+      };
+    },
+    read: function () {
+      return new Promise(function (resolve) {
+        try {
+          chrome.storage.local.get([IMT.FLOATING_ENABLED_KEY, IMT.FLOATING_POSITION_KEY], function (data) {
+            void chrome.runtime.lastError;
+            resolve(U.floatingPrefs.normalize({ enabled: data && data[IMT.FLOATING_ENABLED_KEY],
+              position: data && data[IMT.FLOATING_POSITION_KEY] }));
+          });
+        } catch (e) { resolve(U.floatingPrefs.normalize(U.floatingPrefs._preview)); }
+      });
+    },
+    write: function (patch) {
+      var next = U.floatingPrefs.normalize(patch);
+      var values = {};
+      if (Object.prototype.hasOwnProperty.call(patch, 'enabled')) values[IMT.FLOATING_ENABLED_KEY] = next.enabled;
+      if (Object.prototype.hasOwnProperty.call(patch, 'position')) values[IMT.FLOATING_POSITION_KEY] = next.position;
+      return new Promise(function (resolve, reject) {
+        try {
+          chrome.storage.local.set(values, function () {
+            var err = chrome.runtime.lastError;
+            if (err) reject(new Error(err.message || '浮签设置保存失败'));
+            else resolve();
+          });
+        } catch (e) {
+          if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) { reject(e); return; }
+          U.floatingPrefs._preview = Object.assign({}, U.floatingPrefs._preview, patch);
+          resolve();
+        }
+      });
+    },
+    watch: function (fn) {
+      function changed(changes, area) {
+        if (area !== 'local') return;
+        var patch = {};
+        if (changes[IMT.FLOATING_ENABLED_KEY]) patch.enabled = changes[IMT.FLOATING_ENABLED_KEY].newValue !== false;
+        if (changes[IMT.FLOATING_POSITION_KEY]) patch.position = U.floatingPrefs.normalize({
+          position: changes[IMT.FLOATING_POSITION_KEY].newValue }).position;
+        if (Object.keys(patch).length) fn(patch);
+      }
+      try {
+        chrome.storage.onChanged.addListener(changed);
+        return function () { chrome.storage.onChanged.removeListener(changed); };
+      } catch (e) { return function () {}; }
+    }
+  };
+
   /* ---------- 引擎就绪判断 ---------- */
 
   /**

@@ -42,6 +42,8 @@ Below the main button, **Pause (`暂停`)** keeps existing translations and canc
 
 A fresh installation has **no configured engine**. Real translation requires a working model endpoint; the extension supplies no hosted translation service or API credits. Your provider may charge for requests.
 
+You can also click the **floating `译` button** on the right side of ordinary webpages. Drag it anywhere; its position is remembered across pages. Hover or focus it for pause/continue, retranslation, restoration, settings and close controls. After closing it, select **显示网页浮签** (show webpage widget) in the extension popup, or enable it under **译文样式** (display settings).
+
 ### Try it without an API key
 
 In settings, add **Demo mode (`演示模式（本地示例，无需 Key）`)** and save it. Open the [English demo page](https://xuyang1996.github.io/bilingual-reader/demo.html), then start translation.
@@ -178,6 +180,7 @@ python3 test/e2e.py --ext . \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
 python3 test/verify_reliability.py --ext .
+python3 test/verify_floating.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html

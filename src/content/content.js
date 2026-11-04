@@ -19,6 +19,7 @@
   var currentMode = 'none';
   var currentLang = null;
   var lastError = null;
+  var floating = null;
 
   /* ------------------------------------------------------------------ *
    * 配置
@@ -116,6 +117,11 @@
     var options = opts || {};
     return loadConfig().then(function (cfg) {
       currentConfig = cfg;
+      if (!U.pickReadyEngine(cfg)) {
+        var missing = new Error('尚未配置翻译引擎，请先在设置中添加模型和 API Key。');
+        missing.needConfig = true;
+        throw missing;
+      }
       if (options.targetLang) {
         cfg.targetLang = options.targetLang;
         cfg.generalRule = cfg.generalRule || {};
@@ -150,7 +156,8 @@
       return reportState(controller.getStats());
     }).catch(function (err) {
       lastError = String((err && err.message) || err);
-      return { ok: false, error: lastError };
+      if (floating) floating.update({ error: lastError });
+      return { ok: false, error: lastError, needConfig: !!err.needConfig };
     });
   }
 
@@ -205,6 +212,7 @@
       canPause: !!(stats && stats.canPause),
       error: (stats && stats.failed && stats.lastError) || lastError
     };
+    if (floating) floating.update(state);
     try {
       chrome.runtime.sendMessage({ type: 'IMT_STATE_REPORT', payload: state }, function () {
         void chrome.runtime.lastError;
@@ -288,6 +296,20 @@
 
   function boot() {
     installTransport();
+    if (IMT.floating && window.top === window) {
+      floating = IMT.floating.create({
+        onAction: function (action) { return handle({ target: 'imtl-content', action: action }); },
+        onSettings: function () {
+          return new Promise(function (resolve, reject) {
+            chrome.runtime.sendMessage({ type: 'IMT_OPEN_OPTIONS' }, function (res) {
+              var err = chrome.runtime.lastError;
+              if (err || !res || !res.ok) reject(new Error((err && err.message) || (res && res.error) || '无法打开设置页'));
+              else resolve();
+            });
+          });
+        }
+      });
+    }
     loadConfig().then(function (cfg) {
       currentConfig = cfg;
       if (cfg.autoTranslate) {

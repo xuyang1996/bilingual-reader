@@ -42,6 +42,8 @@ Debajo del botón principal, **Pausar (`暂停`)** conserva las traducciones y c
 
 Una instalación nueva **no tiene ningún motor configurado**. La traducción real necesita un servicio de modelos que funcione. La extensión no proporciona un servicio de traducción alojado ni créditos de API. El proveedor puede cobrar por las solicitudes.
 
+También puedes traducir con el **botón flotante `译`** a la derecha de las páginas web normales. Arrástralo a cualquier posición; se recuerda entre páginas. Al pasar el ratón o darle el foco con el teclado, aparecen los controles de pausa/continuación, retraducción, restauración, ajustes y cierre. Para volver a mostrarlo, usa **显示网页浮签** en el panel de la extensión o actívalo en **译文样式** en los ajustes.
+
 ### Probar sin clave de API
 
 En los ajustes, añade **Modo de demostración (`演示模式（本地示例，无需 Key）`)** y guárdalo. Abre la [página de demostración en inglés](https://xuyang1996.github.io/bilingual-reader/demo.html) e inicia la traducción.
@@ -178,6 +180,7 @@ python3 test/e2e.py --ext . \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
 python3 test/verify_reliability.py --ext .
+python3 test/verify_floating.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html

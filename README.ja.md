@@ -42,6 +42,8 @@ Bilingual Reader は、Web ページの本文を識別し、各段落のそば�
 
 新規インストール時には、**エンジンは未設定**です。実際の翻訳には利用可能なモデルの接続先が必要です。拡張機能自体は翻訳サーバーや API 利用枠を提供しません。プロバイダーによってはリクエストに料金がかかります。
 
+通常の Web ページの右側にある **`译` フローティングボタン**からも翻訳できます。自由にドラッグでき、位置はページ間で保存されます。ホバーまたはキーボードでフォーカスすると、一時停止・再開、再翻訳、復元、設定、非表示の操作ができます。非表示にした後は、拡張機能パネルの **显示网页浮签**、または設定の **译文样式** から再表示できます。
+
 ### API キーなしで試す
 
 設定で**デモモード（`演示模式（本地示例，无需 Key）`）**を追加して保存し、[英語のデモページ](https://xuyang1996.github.io/bilingual-reader/demo.html)を開いて翻訳を開始します。
@@ -178,6 +180,7 @@ python3 test/e2e.py --ext . \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
 python3 test/verify_reliability.py --ext .
+python3 test/verify_floating.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html

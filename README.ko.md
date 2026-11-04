@@ -42,6 +42,8 @@ Bilingual Reader는 웹페이지 본문을 식별하고 각 문단 옆에 번역
 
 새로 설치하면 **설정된 엔진이 없습니다**. 실제 번역에는 사용 가능한 모델 엔드포인트가 필요합니다. 이 확장 프로그램은 자체 번역 서버나 API 사용 크레딧을 제공하지 않으며, 제공업체가 요청에 요금을 부과할 수 있습니다.
 
+일반 웹페이지 오른쪽의 **`译` 플로팅 버튼**으로도 바로 번역할 수 있습니다. 자유롭게 드래그할 수 있고 위치는 페이지 간에 저장됩니다. 마우스를 올리거나 키보드로 포커스하면 일시 중지·계속, 다시 번역, 복원, 설정, 숨기기를 사용할 수 있습니다. 숨긴 후에는 확장 프로그램 패널의 **显示网页浮签** 또는 설정의 **译文样式**에서 다시 표시할 수 있습니다.
+
 ### API 키 없이 체험하기
 
 설정에서 **데모 모드(`演示模式（本地示例，无需 Key）`)**를 추가하고 저장한 다음, [영문 데모 페이지](https://xuyang1996.github.io/bilingual-reader/demo.html)를 열어 번역을 시작합니다.
@@ -178,6 +180,7 @@ python3 test/e2e.py --ext . \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
 python3 test/verify_reliability.py --ext .
+python3 test/verify_floating.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html

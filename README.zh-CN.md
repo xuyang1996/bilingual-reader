@@ -42,6 +42,8 @@ Bilingual Reader 是一个 Chrome 扩展：识别网页正文，把译文放在�
 
 首次安装**没有配置任何引擎**。真实翻译需要可用的模型接口；扩展不提供托管翻译服务或 API 额度，供应商可能对请求收费。
 
+也可直接点击普通网页右侧的 **「译」浮签**。浮签可自由拖动，位置会跨网页记忆；悬停或用键盘聚焦后，可暂停/继续、重译、还原、打开设置或关闭浮签。关闭后，在扩展面板点击 **显示网页浮签**，或在设置 → **译文样式** 中重新开启。
+
 ### 不用 API Key 先体验
 
 在设置中添加**演示模式（本地示例，无需 Key）**并保存，然后打开[英文演示页](https://xuyang1996.github.io/bilingual-reader/demo.html)，启动翻译。
@@ -178,6 +180,7 @@ python3 test/e2e.py --ext . \
   --out /tmp/bilingual-reader-e2e.png
 python3 test/verify_ai.py --ext .
 python3 test/verify_reliability.py --ext .
+python3 test/verify_floating.py --ext .
 python3 test/verify_options.py --ext .
 python3 test/verify_popup.py --ext . \
   --url http://127.0.0.1:8766/bilingual-reader/demo/demo.html

@@ -1041,6 +1041,17 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     loadConfig();
+    U.floatingPrefs.read().then(function (prefs) { $('floatingEnabled').checked = prefs.enabled; });
+    var stopWatchingFloating = U.floatingPrefs.watch(function (patch) {
+      if (Object.prototype.hasOwnProperty.call(patch, 'enabled')) $('floatingEnabled').checked = patch.enabled;
+    });
+    window.addEventListener('unload', stopWatchingFloating, { once: true });
+    $('floatingEnabled').addEventListener('change', function () {
+      var checkbox = this, enabled = checkbox.checked;
+      U.floatingPrefs.write({ enabled: enabled }).then(function () { toast('浮签设置已保存'); }, function (err) {
+        checkbox.checked = !enabled; toast(err.message || '浮签设置保存失败', true);
+      });
+    });
 
     // 恢复上次停留的面板
     var last = null;

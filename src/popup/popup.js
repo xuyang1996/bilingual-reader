@@ -12,6 +12,13 @@
   var config = null;
   var page = null;
   var currentTabId = null;
+  var floatingEnabled = true;
+
+  function renderFloating(prefs) {
+    if (Object.prototype.hasOwnProperty.call(prefs, 'enabled')) floatingEnabled = prefs.enabled;
+    $('floatingToggle').textContent = floatingEnabled ? '隐藏网页浮签' : '显示网页浮签';
+    $('floatingToggle').setAttribute('aria-pressed', floatingEnabled ? 'true' : 'false');
+  }
 
   /** 是否运行在扩展环境里；否则进入离线预览模式 */
   var HAS_CHROME = (typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.sendMessage);
@@ -331,6 +338,20 @@
   document.addEventListener('DOMContentLoaded', function () {
     $('ver').textContent = 'v' + IMT.VERSION;
     listenForProgress();
+    U.floatingPrefs.read().then(renderFloating);
+    var stopWatchingFloating = U.floatingPrefs.watch(renderFloating);
+    window.addEventListener('unload', stopWatchingFloating, { once: true });
+    $('floatingToggle').addEventListener('click', function () {
+      var enabled = !floatingEnabled;
+      $('floatingToggle').disabled = true;
+      U.floatingPrefs.write({ enabled: enabled }).then(function () {
+        renderFloating({ enabled: enabled });
+        $('floatingToggle').disabled = false;
+      }, function (err) {
+        $('floatingToggle').disabled = false;
+        renderStatus(err.message || '浮签设置保存失败', true);
+      });
+    });
 
     loadConfig().then(function () {
       renderLanguages();

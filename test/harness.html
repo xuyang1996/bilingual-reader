@@ -162,7 +162,14 @@
     },
     storage: {
       local: {
-        get: function (key, cb) { if (cb) cb({}); },
+        get: function (key, cb) {
+          var data = {};
+          // 内容脚本的启动需要已配置的引擎；实际译文仍由上方 mock 提供。
+          if (key === 'imtl.config') data[key] = { engine: 'mock', engines: {
+            mock: { id: 'mock', type: 'ai', auth: 'none', baseUrl: 'http://127.0.0.1/mock', model: 'mock' }
+          } };
+          if (cb) cb(data);
+        },
         set: function (obj, cb) { if (cb) cb(); }
       }
     }

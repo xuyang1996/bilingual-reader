@@ -8,7 +8,7 @@
 
 | 项 | 内容 |
 | --- | --- |
-| 对应版本 | v1.4.2（Chrome MV3） |
+| 对应版本 | v1.4.3（Chrome MV3） |
 | 代码规模 | `src/` 约 6800 行，19 个文件 |
 | 构建 | **无**。纯 classic script，无 npm、无打包器、无 TypeScript |
 | 运行时 | Chrome 96+ |
@@ -389,6 +389,7 @@ IMT.client.setTransport(function (texts, req) {
 - **并发**：页面与后台全局并发均不超过 2，避免多标签页或 iframe 同时请求触发限流。
 - **故障恢复**：错误携带 `code/status/fatal`；致命配置错误与重试耗尽会暂停后续调度。`retryFailed()` 保留成功译文，只补翻失败段落。详见[故障修复说明](RELIABILITY.zh-CN.md)。
 - **用户暂停与重译**：`pause()` 保留译文并取消请求；`resume()` 从最早未完成段落的上一段补接。代次标记隔离晚到结果，`AbortSignal` 通过请求 ID 映射传递到后台排队、退避与 fetch。`retranslate` 创建新管线、从页首翻译全部段落，跳过缓存读取并更新缓存。详见[翻译控制说明](TRANSLATION-CONTROLS.zh-CN.md)。
+- **网页浮签**：`content/floating.js` 在顶层网页挂载 Shadow DOM 控件，复用内容脚本的动作路由和状态。浮签偏好用独立 storage 键同步，正文分段会跳过宿主。详见[浮签说明](FLOATING-CONTROLS.zh-CN.md)。
 - **预过滤**：已翻译过的、**已经是目标语言的**（`U.detectLang` 判定语族相同）直接跳过，不发请求。
 
 #### 一批文本的处理顺序（顺序不能乱）

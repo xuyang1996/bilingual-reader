@@ -341,5 +341,7 @@
   IMT.DEFAULT_CONFIG = DEFAULT_CONFIG;
   IMT.STORAGE_KEY = 'imtl.config';
   IMT.CACHE_KEY_PREFIX = 'imtl.cache.';
-  IMT.VERSION = '1.4.2';
+  IMT.FLOATING_ENABLED_KEY = 'imtl.floating.enabled';
+  IMT.FLOATING_POSITION_KEY = 'imtl.floating.position';
+  IMT.VERSION = '1.4.3';
 })(typeof globalThis !== 'undefined' ? globalThis : this);
