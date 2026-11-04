@@ -1,6 +1,6 @@
 # Chrome 应用商店发布信息
 
-发布日期准备：2026-11-04 · 版本：1.4.0
+最近提交审核：2026-11-05 · 版本：1.4.4
 
 ## 项目链接
 
@@ -14,7 +14,7 @@
 
 名称：Bilingual Reader — 双语对照翻译
 
-简短说明：段落级双语对照网页翻译：识别正文，原文与译文同屏阅读。支持自备大模型 API、本地模型及离线演示模式。
+简短说明（由 manifest 提供）：段落级双语对照网页翻译：智能正文识别、懒翻译、增量翻译、PII 脱敏、术语库、翻译风格场景、可对接各家大模型 API。
 
 类别：生产力 / 工具（以后台可选类别为准）
 
@@ -36,11 +36,16 @@ Bilingual Reader 识别网页正文并逐段翻译，把译文放在原文下方
 可配置多个引擎；支持地址及鉴权候选回退、批量翻译、响应字段自定义。
 内置通用、科技、新闻、学术、编程文档、GitHub、法律、医疗、金融、购物、客服、文学、社交媒体、通俗英语等场景，可编辑提示词或按网址匹配场景。
 
+【网页浮签与翻译控制】
+网页右侧的 32 像素浮签默认半透明，悬停后不透明并展开操作；可上下拖动并记住高度。
+点击即可翻译；支持暂停/继续、从头重新翻译、失败段落补翻和还原。可快捷打开设置或关闭浮签，关闭后可从工具栏面板重新显示。
+暂停会停止当前翻译请求，继续时从停止位置的上一个段落接着翻译；重译会从头重新翻译。
+
 【阅读与效率】
 正文识别默认排除导航、侧栏、页脚和目录；可用站点规则精确调整。
 懒翻译按滚动位置发请求，动态新增内容可自动补翻。
 本地缓存减少重复请求；术语库帮助统一专有名词。
-使用工具栏按钮、页面右键菜单或 Alt+T 启动与还原。
+也可使用工具栏按钮、页面右键菜单或 Alt+T 启动与还原。
 
 【数据处理】
 扩展作者不运营接收正文或密钥的服务器，没有广告与遥测。真实翻译会把处理后的正文、提示词和鉴权信息直接发送到你配置的模型接口。可选 PII 脱敏会尝试替换邮箱、电话等信息，但不能保证识别全部敏感内容。完整说明请见隐私政策。
@@ -80,8 +85,11 @@ To verify without an API key:
 1. Install the extension and open its Options page.
 2. In 翻译引擎 (Translation engines), choose 演示模式（本地示例，无需 Key） from the engine picker, then click 保存这个引擎 (Save this engine). A fresh install has no engine selected; this step is required.
 3. Open https://xuyang1996.github.io/bilingual-reader/demo.html (an ordinary public HTTPS page).
-4. Click the toolbar icon and 翻译此页 (Translate this page). Scroll to translate additional paragraphs. Demo translations have a pale yellow background. Navigation and code blocks are skipped.
+4. Click the right-edge floating button or the toolbar icon and 翻译此页 (Translate this page). Scroll to translate additional paragraphs. Demo translations have a pale yellow background. Navigation and code blocks are skipped.
 5. Switch between dual / translation-only / original-only modes, then click 还原本页 (Restore).
+6. Drag the floating button vertically; it remains docked to the right edge. It is translucent when idle and opaque on hover. Hover to pause/resume, restart translation, open settings or hide it. The toolbar panel can show it again.
+
+The exact Chinese dashboard instructions (428 characters, within the 500-character limit) are in `reviewer-notes.txt`.
 
 Demo mode uses a bundled local dictionary, makes no network requests, and is clearly labeled as a demonstration. It is not machine translation.
 For real translation, users supply their own model API URL/model/key or use a local model server. The extension sends text and authentication directly to that configured endpoint; the developer receives none of it. Optional PII masking is heuristic and does not guarantee removal of all sensitive content.
@@ -95,7 +103,7 @@ Source: https://github.com/xuyang1996/bilingual-reader
 
 ## 发布材料与操作
 
-- 商店包：仓库外 bilingual-reader-store.zip（manifest.json 位于根目录）。
+- 商店包：仓库外 ../releases/v1.4.4/bilingual-reader-store.zip（manifest.json 位于根目录；勿使用父目录中的旧版同名包）。
 - 图标：icons/icon128.png。
 - 截图：store/screenshot-01-bilingual.png 至 screenshot-05-scenario.png（1280×800、RGB）。
 - 小宣传图：store/promo-small-440x280.png。
@@ -108,6 +116,8 @@ Source: https://github.com/xuyang1996/bilingual-reader
 
 2026-11-04：准备 v1.4.0 首次公开发布，补齐 GitHub 项目链接与 Pages 资源，修正文案中的数据流及演示模式验证步骤。扩展运行代码未变更。
 
+2026-11-05：撤回待审核的 v1.4.0，上传 v1.4.4，更新浮签、暂停/继续、重译功能说明及提示词来源致谢，保存新版测试说明后重新提交审核。
+
 ## 实际提交状态
 
-2026-11-04：v1.4.0 已提交 Chrome 应用商店，后台状态为「待审核」，已启用审核通过后自动发布。联系邮箱已验证；GitHub Pages 的主页、隐私政策、演示页均已公开可访问。商店 ID：`hknjjifpobhffnapdepmclepeaholndk`。
+2026-11-05：v1.4.4 已提交 Chrome 应用商店，后台软件包页确认版本为 1.4.4、状态为「待审核」，已启用审核通过后自动发布。产品尚未公开上架。商店 ID：`hknjjifpobhffnapdepmclepeaholndk`。详细记录见 `PUBLISH-STATUS.md`。
