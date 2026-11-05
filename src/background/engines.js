@@ -237,6 +237,8 @@
    * 术语库始终追加在最后。
    */
   function buildSystemPrompt(opts, engine, isBatch) {
+    // Study uses the same transport, but its output must not inherit translation instructions.
+    if (opts.taskPrompt) return opts.taskPrompt;
     var glossary = IMT.glossary && IMT.glossary.buildPrompt
       ? IMT.glossary.buildPrompt(opts.glossary, opts.sourceLang, opts.targetLang)
       : '';
@@ -732,6 +734,10 @@
    * 而不是一堆半吊子的碎片。表里没有的句子才落到下面的词表替换。
    */
   var DEMO_PHRASES = {
+    'Try the English study card': '体验英语学习卡',
+    'After translating this page, select the sentence below and open its study card, or select the word waiting to look it up. Both examples work in Demo mode.':
+      '翻译本页后，划选下方整句，点「学这句」，或划选 waiting，点「查单词」。两个示例都支持演示模式。',
+    'I ran into an old friend while I was waiting for the bus.': '我在等公交车时，偶然碰见了一位老朋友。',
     'Bilingual Reader — demo project': 'Bilingual Reader — 演示项目',
     'This page is a normal English web page. Load the extension, then click the toolbar icon and press': '这是一个普通的英文网页。加载扩展后，点击工具栏图标并按下',
     'Translate this page': '翻译此页',
@@ -795,9 +801,8 @@
     'Local (Ollama / vLLM / LM Studio)': '本地部署（Ollama / vLLM / LM Studio）',
     'Set the auth mode to “None”': '把鉴权方式设为「无」',
     'DeepSeek example': 'DeepSeek 示例',
-    'Email addresses, phone numbers, credit card numbers, identity numbers, IP addresses and URLs are replaced with placeholders before the text leaves the browser, and restored locally when the translation comes back. API keys are stored in':
-      '邮箱地址、电话号码、信用卡号、身份证号、IP 地址与网址在内容离开浏览器前会被替换为占位符，译文返回后在本地还原。API Key 存放在',
-    'and never leave your machine.': '，永远不会离开你的机器。',
+    'Optional masking replaces some sensitive values with placeholders before text is sent. API keys are stored locally and used to authenticate requests to the model endpoint you configure. Demo translation and the study example run locally.':
+      '启用脱敏后，部分敏感信息会在文本发送前被替换为占位符。API Key 保存在本机，用于向你配置的模型接口发送请求时鉴权。演示译文和学习例句在本机运行。',
     'Why is a paragraph not translated?': '为什么有的段落没有被翻译？',
     'The recognizer skips blocks that are too short, code samples, navigation labels and sidebars. You can lower the thresholds in the settings page.':
       '识别器会跳过太短的块、代码样例、导航标签与侧栏。你可以在设置页里调低阈值。',
@@ -897,10 +902,10 @@
   }
 
   // 故障隔离包含配置指纹：更换 Key 或参数后立刻允许重新测试。
-  function failureKey(engine) {
+  function failureKey(engine, task) {
     return memoKey(engine) + '|' + IMT.utils.hashString(JSON.stringify([
       engine.key || '', engine.headers || {}, engine.extraBody || {}
-    ]));
+    ])) + (task ? '|study' : '');
   }
 
   function errorInfo(err) {
@@ -977,7 +982,7 @@
       }
 
       var key = memoKey(e);
-      var fk = failureKey(e);
+      var fk = failureKey(e, opts && opts.taskPrompt);
       if (failures[fk] && failures[fk].until > Date.now()) {
         return Promise.reject(failures[fk].error);
       }
@@ -1034,7 +1039,7 @@
       var urlPos = 0, authPos = 0;
       var lastError = null;
       var retries = 0;
-      var fk = failureKey(e);
+      var fk = failureKey(e, opts.taskPrompt);
 
       function retry(err, out) {
         IMT.utils.throwIfAborted(opts.signal);

@@ -396,6 +396,11 @@
     $('lang').addEventListener('change', function () { changeLang(this.value); });
     $('engine').addEventListener('change', function () { changeEngine(this.value); });
 
+    $('studyCollection').addEventListener('click', function () {
+      if (!HAS_CHROME) return;
+      chrome.tabs.create({ url: chrome.runtime.getURL('src/study/collection.html') });
+      window.close();
+    });
     $('options').addEventListener('click', openOptions);
   });
 

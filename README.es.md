@@ -21,6 +21,7 @@ No necesita compilación, instalación con npm ni un entorno de ejecución de te
 ## Funciones
 
 - **Lectura bilingüe:** alterna entre original y traducción, solo traducción o solo original; restaura la página al terminar.
+- **Aprendizaje de inglés.** Consulta la estructura de una oración, sus expresiones clave o el significado, la transcripción fonética estadounidense y la formación de una palabra. Escucha con una voz local y guarda palabras u oraciones para repasarlas. [Ejemplo de aprendizaje](https://xuyang1996.github.io/bilingual-reader/demo.html#study)
 - **Reconocimiento del contenido:** omite por defecto menús, barras laterales, pies de página y otros elementos de navegación. Puedes ajustar el alcance con reglas por sitio.
 - **Traducción diferida:** solicita los párrafos cercanos al área visible en lugar de enviar toda la página de una vez.
 - **Contenido dinámico:** con la traducción incremental activada, también traduce los elementos nuevos.

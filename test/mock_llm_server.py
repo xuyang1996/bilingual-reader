@@ -95,9 +95,23 @@ def split_numbered(content):
     return out
 
 
-def openai_reply(content, mode, prefix="译:"):
+def openai_reply(content, mode, prefix="译:", study=False):
+    lookup = json.loads(content) if study else {}
+    sentence = lookup.get("sentence")
+    word = lookup.get("word")
+    vocabulary = {"text": "waiting", "headword": "wait", "ipa": "ˈweɪtɪŋ",
+                  "meaning": "正在等候。", "root": "wait（等候）加上 -ing。"}
     numbered = split_numbered(content)
-    if numbered is not None:
+    if word and mode != "study-invalid":
+        body = json.dumps({"word": dict(vocabulary, text=word)}, ensure_ascii=False)
+    elif sentence and mode != "study-invalid":
+        body = "```json\n" + json.dumps({
+            "main": {"text": sentence, "explanation": "说清谁做了什么。"},
+            "detail": "说明事情发生的时间。",
+            "phrases": [{"text": "ran into", "explanation": "偶然碰见。"}],
+            "words": [vocabulary] if "waiting" in sentence else [],
+        }, ensure_ascii=False) + "\n```"
+    elif numbered is not None:
         body = "\n".join("%d. %s" % (i, translate(t, prefix)) for i, t in numbered)
     else:
         body = translate(content, prefix)
@@ -208,6 +222,8 @@ class Handler(BaseHTTPRequestHandler):
 
         if mode == "slow-openai":
             time.sleep(.2)
+        if mode == "study-slow":
+            time.sleep(1)
 
         # 鉴权：默认要求 Bearer；no-bearer 模式只认 x-api-key
         if mode != "no-auth":
@@ -269,7 +285,7 @@ class Handler(BaseHTTPRequestHandler):
                         ensure_ascii=False) + "\n\n",
                     "data: [DONE]\n\n"]
                 return self._text("".join(chunks), 200, "text/event-stream")
-            return self._json(openai_reply(content, mode, prefix))
+            return self._json(openai_reply(content, mode, prefix, study="英语初学者" in system_text))
         if path == "/responses" or path == "/v1/responses":
             body = openai_reply(content, "responses", prefix)
             return self._json(body)

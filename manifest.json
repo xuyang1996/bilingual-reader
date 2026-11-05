@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Bilingual Reader — 双语对照翻译",
-  "version": "1.4.4",
-  "description": "段落级双语对照网页翻译：智能正文识别、懒翻译、增量翻译、PII 脱敏、术语库、翻译风格场景、可对接各家大模型 API。",
+  "version": "1.5.0",
+  "description": "网页段落双语对照翻译，支持英文句子解析、查词、音标、发音和本地收藏。可连接自备模型 API 或本地模型，支持术语库与敏感信息脱敏。",
   "minimum_chrome_version": "96",
   "icons": {
     "16": "icons/icon16.png",
@@ -41,6 +41,9 @@
         "src/shared/defaults.js",
         "src/shared/utils.js",
         "src/shared/prompts.js",
+        "src/shared/study.js",
+        "src/shared/study-collection.js",
+        "src/shared/study-view.js",
         "src/core/rules.js",
         "src/core/segment.js",
         "src/core/render.js",
@@ -48,6 +51,7 @@
         "src/core/glossary.js",
         "src/core/pipeline.js",
         "src/content/floating.js",
+        "src/content/study-card.js",
         "src/content/content.js"
       ],
       "css": ["src/styles/inject.css"]

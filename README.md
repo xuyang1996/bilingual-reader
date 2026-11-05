@@ -21,6 +21,7 @@ No build step, npm installation or third-party runtime is required. The extensio
 ## Features
 
 - **Bilingual reading:** switch between original + translation, translation only and original only; restore the page when finished.
+- **English study.** Select a sentence for its structure and key phrases, or a word for its meaning in context, US IPA and word formation. Listen with a local English voice and save words or sentences for review.
 - **Content recognition:** skip navigation, sidebars, footers and other page furniture by default; customize the scope with site rules.
 - **Lazy translation:** request translations near the viewport instead of sending the entire page at once.
 - **Dynamic content:** translate newly inserted content with incremental translation enabled.
@@ -39,6 +40,8 @@ No build step, npm installation or third-party runtime is required. The extensio
 6. Choose your target language in the popup. The default target is Simplified Chinese; 17 target languages are listed.
 
 Below the main button, **Pause (`暂停`)** keeps existing translations and cancels active and queued work. It becomes **Continue (`继续`)**, which resumes from the paragraph immediately before the pause point. **Retranslate (`重新翻译`)** clears this page's translations and starts again from the first paragraph, bypassing old cache. **Restore (`还原本页`)** removes translations and ends the session.
+
+After translating, select English original text and click **Learn this sentence (`学这句`)** or **Look up word (`查单词`)**. Find locally saved items under **Study collection (`学习收藏`)** in the toolbar popup. The [demo example](https://xuyang1996.github.io/bilingual-reader/demo.html#study) works without an API key.
 
 A fresh installation has **no configured engine**. Real translation requires a working model endpoint; the extension supplies no hosted translation service or API credits. Your provider may charge for requests.
 

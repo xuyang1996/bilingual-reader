@@ -10,6 +10,9 @@ importScripts(
   '../shared/defaults.js',
   '../shared/utils.js',
   '../shared/prompts.js',
+  '../shared/study.js',
+  '../shared/study-collection.js',
+  '../core/pii.js',
   '../core/glossary.js',
   './cache.js',
   './engines.js'
@@ -232,6 +235,96 @@ importScripts(
     });
   }
 
+  function handleStudy(msg, signal) {
+    var isWord = msg.type === 'IMT_STUDY_WORD';
+    var word = isWord ? IMT.study.normalizeWord(msg.word) : '';
+    var sentence = IMT.study.normalizeSentence(msg.sentence);
+    if (isWord ? !word : !sentence) {
+      return Promise.resolve({ ok: false, error: isWord ? '请划选一个英文单词。' : '请划选一句完整的英文原文。' });
+    }
+    var offset = msg.offset;
+    if (isWord && (!Number.isInteger(offset) || offset < 0 || sentence.slice(offset, offset + word.length) !== word)) {
+      sentence = '';
+    }
+    var privacyText = sentence;
+    if (isWord && !sentence && typeof msg.nearby === 'string' && msg.nearby.length <= 800 &&
+      Number.isInteger(offset) && offset >= 0 && msg.nearby.slice(offset, offset + word.length) === word) {
+      privacyText = msg.nearby;
+    }
+    return loadConfig().then(function (cfg) {
+      U.throwIfAborted(signal);
+      var engine = cfg.engines[msg.engineId];
+      if (!U.engineReady(engine)) engine = cfg.engines[U.pickReadyEngine(cfg)];
+      if (!engine) {
+        return { ok: false, error: '请在扩展设置中选择已配置的模型，再使用学习卡。' };
+      }
+      if (engine.format === 'demo') {
+        var example = IMT.study.demoAnalysis(sentence, word);
+        return example
+          ? { ok: true, analysis: example, demo: true }
+          : { ok: false, error: '演示模式只解析内置例句和示例单词。学习其他内容时，请在设置中选择已配置的模型。' };
+      }
+      var encoded = cfg.pii && cfg.pii.enabled ? IMT.pii.encode(privacyText, cfg.pii.types) : { text: privacyText };
+      if (isWord && encoded.map && Object.keys(encoded.map).some(function (key) {
+        // A selected word can be a fragment of a masked email or URL.
+        var sensitive = encoded.map[key];
+        var index = privacyText.indexOf(sensitive, Math.max(0, offset - sensitive.length + 1));
+        return index !== -1 && index < offset + word.length;
+      })) return { ok: false, error: '所选文字属于已脱敏的信息，请重新划选。' };
+
+      var payload = isWord ? { word: word } : {};
+      if (sentence) payload.sentence = encoded.text;
+      return withSlot(function () {
+        return IMT.engines.ai.one(JSON.stringify(payload),
+          { signal: signal, taskPrompt: isWord ? IMT.study.wordPrompt : IMT.study.prompt }, engine);
+      }, signal).then(function (reply) {
+        U.throwIfAborted(signal);
+        var analysis = IMT.study.parseReply(IMT.engines._internal.stripFences(reply), function (text) {
+          return IMT.pii.decode(text, encoded.map);
+        }, payload);
+        if (!analysis) return { ok: false, error: '模型没有返回可读的解析，请重试。', retry: true };
+        if (analysis.unsupported) return { ok: false, error: isWord ? '未能识别这个英文单词，请重新划选。' : '这段文字未能识别为一句英文，请重新划选。' };
+        return { ok: true, analysis: analysis };
+      });
+    }).catch(function () {
+      return { ok: false, error: '暂时无法解析。请检查模型服务后重试。', retry: true };
+    });
+  }
+
+  var collectionWrites = Promise.resolve();
+  function saveStudy(msg) {
+    var job = collectionWrites.then(function () {
+      var item = msg.entry || {};
+      var isWord = item.kind === 'word';
+      var text = isWord ? IMT.study.normalizeWord(item.text) : IMT.study.normalizeSentence(item.text);
+      if (!text || (!isWord && item.kind !== 'sentence') || typeof msg.saved !== 'boolean') {
+        return { ok: false, error: '没有可收藏的学习内容。' };
+      }
+      var entry = { kind: item.kind, text: text };
+      if (isWord) entry.context = IMT.study.normalizeSentence(item.context);
+      if (msg.saved) {
+        entry.analysis = IMT.study.parseReply(JSON.stringify(item.analysis), null,
+          isWord ? { word: text } : { sentence: text });
+        if (!entry.analysis || entry.analysis.unsupported) return { ok: false, error: '解析内容不完整，无法收藏。' };
+      }
+      var collection = IMT.studyCollection;
+      return collection.read().then(function (items) {
+        var key = collection.entryKey(entry);
+        var next = items.filter(function (saved) { return collection.entryKey(saved) !== key; });
+        if (msg.saved) next.unshift(entry);
+        var update = {};
+        update[collection.storageKey] = next;
+        return chrome.storage.local.set(update).then(function () {
+          return { ok: true, saved: msg.saved };
+        });
+      });
+    }).catch(function () {
+      return { ok: false, error: '无法更新本地收藏，请重试。' };
+    });
+    collectionWrites = job;
+    return job;
+  }
+
   /* ------------------------------------------------------------------ *
    * 标签页通信
    * ------------------------------------------------------------------ */
@@ -314,20 +407,29 @@ importScripts(
 
     switch (msg.type) {
       case 'IMT_TRANSLATE':
+      case 'IMT_STUDY_SENTENCE':
+      case 'IMT_STUDY_WORD':
         var controller = new AbortController();
         var key = requestKey(msg, sender);
         if (msg.requestId) pendingRequests.set(key, controller);
-        handleTranslate(msg, sender, controller.signal).then(function (result) {
+        var job = msg.type === 'IMT_TRANSLATE'
+          ? handleTranslate(msg, sender, controller.signal) : handleStudy(msg, controller.signal);
+        job.then(function (result) {
           if (msg.requestId) pendingRequests.delete(key);
           sendResponse(result);
         });
         return true;
 
       case 'IMT_CANCEL_TRANSLATION':
+      case 'IMT_CANCEL_STUDY':
         var request = pendingRequests.get(requestKey(msg, sender));
         if (request) request.abort();
         sendResponse({ ok: true });
         return false;
+
+      case 'IMT_STUDY_SAVE':
+        saveStudy(msg).then(sendResponse);
+        return true;
 
       case 'IMT_TEST_ENGINE':
         handleTestEngine(msg).then(sendResponse);

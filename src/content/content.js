@@ -20,6 +20,7 @@
   var currentLang = null;
   var lastError = null;
   var floating = null;
+  var studyCard = null;
 
   /* ------------------------------------------------------------------ *
    * 配置
@@ -134,6 +135,7 @@
       if (options.mode) rule.translationMode = options.mode;
       currentLang = rule.targetLang || cfg.targetLang;
 
+      if (studyCard) studyCard.dismiss();
       if (controller) controller.stop();
 
       controller = IMT.pipeline.create({
@@ -162,6 +164,7 @@
   }
 
   function stopTranslation() {
+    if (studyCard) studyCard.dismiss();
     if (controller) {
       controller.stop();
       controller = null;
@@ -179,6 +182,7 @@
   function setMode(mode) {
     if (!controller) return { ok: false, error: '页面尚未翻译' };
     controller.setMode(mode);
+    if (mode === 'translation' && studyCard) studyCard.dismiss();
     currentMode = mode;
     return reportState(controller.getStats());
   }
@@ -296,6 +300,11 @@
 
   function boot() {
     installTransport();
+    if (IMT.studyCard) {
+      studyCard = IMT.studyCard.create({
+        getEngineId: function () { return currentConfig && currentConfig.engine; }
+      });
+    }
     if (IMT.floating && window.top === window) {
       floating = IMT.floating.create({
         onAction: function (action) { return handle({ target: 'imtl-content', action: action }); },

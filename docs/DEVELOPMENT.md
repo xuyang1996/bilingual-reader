@@ -8,7 +8,7 @@
 
 | 项 | 内容 |
 | --- | --- |
-| 对应版本 | v1.4.4（Chrome MV3） |
+| 对应版本 | v1.5.0（Chrome MV3） |
 | 代码规模 | `src/` 约 6800 行，19 个文件 |
 | 构建 | **无**。纯 classic script，无 npm、无打包器、无 TypeScript |
 | 运行时 | Chrome 96+ |

@@ -93,6 +93,10 @@
 
   <p>A paragraph level bilingual translation engine for the web. The extension reads the page, decides which blocks are real article content, and renders the translation right underneath the original paragraph.</p>
 
+  <h2 id="study">Try the English study card</h2>
+  <p>After translating this page, select the sentence below and open its study card, or select the word waiting to look it up. Both examples work in Demo mode.</p>
+  <p id="study-example">I ran into an old friend while I was waiting for the bus.</p>
+
   <div class="toc">
     <strong>Table of contents</strong>
     <ul>
@@ -114,7 +118,8 @@
     <li>Incremental translation for content that is loaded dynamically</li>
     <li>Personal information masking before the request, restored locally afterwards</li>
     <li>A terminology base that keeps your product names consistent</li>
-    <li>Free engine out of the box, or bring your own key for an AI engine</li>
+    <li>English sentence and vocabulary cards with local pronunciation and saved items</li>
+    <li>Bundled demo examples and support for your own model API</li>
   </ul>
 
   <h2 id="install">Installation</h2>
@@ -178,7 +183,7 @@
 
   <h2 id="privacy">Privacy</h2>
 
-  <p>Email addresses, phone numbers, credit card numbers, identity numbers, IP addresses and URLs are replaced with placeholders before the text leaves the browser, and restored locally when the translation comes back. API keys are stored in <code>chrome.storage.local</code> and never leave your machine.</p>
+  <p>Optional masking replaces some sensitive values with placeholders before text is sent. API keys are stored locally and used to authenticate requests to the model endpoint you configure. Demo translation and the study example run locally.</p>
 
   <h2 id="faq">FAQ</h2>
 
