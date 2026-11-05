@@ -6,37 +6,32 @@ Updated: 2026-11-05 (Asia/Shanghai)
 
 - Item ID: `hknjjifpobhffnapdepmclepeaholndk`
 - Dashboard: https://chrome.google.com/webstore/devconsole/fb83a780-0058-4709-be61-cea17a9209ea/hknjjifpobhffnapdepmclepeaholndk/edit
-- Version: **1.4.4**.
-- Status: **Submitted; pending Google compliance review.** The submission confirmation and the package page both confirmed the pending-review state; the package page showed version 1.4.4.
+- Version: **1.5.0**.
+- Status: **Submitted and pending Google compliance review.** The package page showed version 1.5.0 before submission, and the confirmation dialog reported that the item was under compliance review.
 - Automatically publish after approval: enabled.
 - Public listing is not live yet; review and approval remain with Google.
-- Replaced the pending v1.4.0 submission with the v1.4.4 store ZIP on 2026-11-05. The previous review was cancelled first. Existing icon, 5 screenshots and promotional tiles were retained.
-- Updated and saved the Chinese description with the compact, translucent, right-docked floating button, pause/resume, restart translation and prompt-source attribution. Saved the updated 428-character reviewer instructions.
-- Package permissions remained storage, contextMenus and host permission; no new permissions were introduced.
-- Saved: Chinese description, Tools category, Chinese (China) language, homepage/support URLs, single purpose, permissions justifications, no-remote-code declaration, data disclosures, privacy URL and reviewer instructions.
-- Distribution observed: free, public, all regions. Existing non-trader account classification was not changed.
-- Public contact email was explicitly approved by the account holder and verified successfully.
-- Homepage, privacy policy and demo URLs returned HTTP 200; their public bytes matched committed source.
+- Replaced the pending v1.4.4 submission with the v1.5.0 store ZIP on 2026-11-05. The previous review was cancelled before upload. The existing icon, screenshots and promotional tiles were retained.
+- Saved the Chinese listing, updated single purpose and permission justifications, and saved the 364-character reviewer instructions for the offline study demo.
+- The package uses the existing storage, contextMenus and all-sites host permissions.
+- The five localized homepages, privacy policy and demo returned HTTP 200 and matched the release commit byte for byte before submission.
 - The all-websites host permission caused an additional-review warning, which was acknowledged before submission.
 
 ## GitHub
 
-- Public repository created: https://github.com/xuyang1996/bilingual-reader
-- Source and history were pushed to main; public visibility and remote commit were verified.
-- GitHub login and second-factor authentication completed successfully.
-- GitHub Pages source: main /docs; HTTPS enforced; deployment verified as built.
-- Published files: docs/index.html, docs/privacy.html, docs/demo.html, docs/.nojekyll.
+- Public repository: https://github.com/xuyang1996/bilingual-reader
+- Release source commit: `86abd37df6e73f2182d533c0e5b6af990626d333`.
+- GitHub Pages builds from main /docs. The release deployment was verified as built.
 - Live Pages URL: https://xuyang1996.github.io/bilingual-reader/
 - Live privacy URL: https://xuyang1996.github.io/bilingual-reader/privacy.html
-- Release downloads: https://github.com/xuyang1996/bilingual-reader/releases/tag/v1.4.4
-- Future source pushes to main automatically rebuild the Pages site.
+- Release downloads: https://github.com/xuyang1996/bilingual-reader/releases/tag/v1.5.0
+- Both release asset digests matched the local archives.
 
-## Validation for v1.4.4
+## Validation for v1.5.0
 
-- The uploaded ZIP's 27 files were verified byte-for-byte against release source commit `e791a12f781673a8e852988cc6185c8a69fa9622`; its root manifest declared version 1.4.4.
-- Floating-button browser checks: 29 passed, including compact size, opacity, hover, vertical dragging, right-edge docking, saved height and restoring a hidden button.
-- Store ZIP SHA-256: `5bd40bf042f60b418d65a65f2cc5a13bb0872437d32420ff447c91ff141d3592`.
-- Chrome Web Store accepted the package and confirmed version 1.4.4 after submission.
+- The uploaded ZIP contains 33 files and a root manifest declaring version 1.5.0.
+- The extracted store package passed the study and offline demo checks, 42 translation reliability checks, 53 settings checks, popup checks and 35 model API compatibility checks.
+- Store ZIP SHA-256: `687dbeff70d019bc27ef8d94b5ed2bab640341a37d0f5d8197ded34aa88c5f3e`.
+- Source ZIP SHA-256: `9e1140da4c6d3051cbbae88e4d3a7e74f9d1ff412dc717485e16931dd8da3bc7`.
 
 ## Initial v1.4.0 publication validation (2026-11-04)
 
@@ -53,7 +48,7 @@ Updated: 2026-11-05 (Asia/Shanghai)
 
 ## Local artifacts
 
-- Store ZIP: ../releases/v1.4.4/bilingual-reader-store.zip (manifest at ZIP root).
-- Source ZIP: ../releases/v1.4.4/bilingual-reader.zip (bilingual-reader/ prefix).
-- Exact 428-character dashboard review instructions: reviewer-notes.txt (excluding the final newline).
+- Store ZIP: ../releases/v1.5.0/bilingual-reader-store.zip (manifest at ZIP root).
+- Source ZIP: ../releases/v1.5.0/bilingual-reader.zip (bilingual-reader/ prefix).
+- Exact 364-character dashboard review instructions: reviewer-notes.txt (excluding the final newline).
 - Versioned release archives remain unchanged; these publication records are maintained separately on main.
