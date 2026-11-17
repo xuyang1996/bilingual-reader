@@ -4,239 +4,79 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bilingual Reader 双语对照翻译</title>
-  <style>
-    :root {
-      --bg: #ffffff;
-      --fg: #1f2328;
-      --muted: #656d76;
-      --border: #d0d7de;
-      --accent: #0b6bcb;
-      --accent-soft: #ddf4ff;
-      --danger: #d1242f;
-      --radius: 8px;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #1c2128;
-        --fg: #e6edf3;
-        --muted: #9198a1;
-        --border: #3d444d;
-        --accent: #4493f8;
-        --accent-soft: #16324f;
-      }
-    }
-    * { box-sizing: border-box; }
-    body {
-      width: 300px;
-      margin: 0;
-      padding: 14px;
-      font: 13px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: var(--fg);
-    }
-    header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    header .logo {
-      width: 22px; height: 22px; border-radius: 6px;
-      background: linear-gradient(135deg, #0b6bcb, #45b0ff);
-      flex: none;
-    }
-    header h1 { font-size: 14px; margin: 0; font-weight: 600; }
-    header .ver { color: var(--muted); font-size: 11px; margin-left: auto; }
-    button {
-      font: inherit;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--fg);
-      border-radius: var(--radius);
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-    button:hover { border-color: var(--accent); }
-    button:disabled { cursor: not-allowed; opacity: 0.55; }
-    .translation-actions { display: flex; gap: 8px; margin-top: 8px; }
-    .translation-actions button { flex: 1; }
-    button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      font-weight: 600;
-      width: 100%;
-      padding: 9px 10px;
-      font-size: 13.5px;
-    }
-    button.primary:hover { filter: brightness(1.08); }
-    button.primary:disabled {
-      background: var(--border);
-      border-color: var(--border);
-      color: var(--muted);
-      filter: none;
-      cursor: not-allowed;
-    }
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .row > label {
-      width: 72px;
-      flex: none;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    select, input[type="text"] {
-      flex: 1;
-      min-width: 0;
-      font: inherit;
-      padding: 5px 7px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg);
-      color: var(--fg);
-    }
-    .seg { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; flex: 1; }
-    .seg button {
-      flex: 1;
-      border: none;
-      border-radius: 0;
-      padding: 6px 4px;
-      background: var(--bg);
-      font-size: 12px;
-    }
-    .seg button + button { border-left: 1px solid var(--border); }
-    .seg button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-    .status {
-      margin-top: 12px;
-      padding: 8px 10px;
-      border-radius: var(--radius);
-      background: var(--accent-soft);
-      color: var(--fg);
-      font-size: 12px;
-      min-height: 18px;
-    }
-    .status.err { background: rgba(209, 36, 47, 0.12); color: var(--danger); }
-    .notice {
-      display: none;
-      margin-bottom: 10px;
-      padding: 10px 11px;
-      border-radius: var(--radius);
-      border: 1px solid rgba(209, 36, 47, 0.35);
-      background: rgba(209, 36, 47, 0.09);
-      color: var(--fg);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-    .notice.show { display: block; }
-    .notice b { display: block; margin-bottom: 4px; color: var(--danger); font-size: 12.5px; }
-    .notice.demo {
-      border-color: rgba(191, 135, 0, 0.4);
-      background: rgba(191, 135, 0, 0.09);
-      display: none;
-    }
-    .notice.demo.show { display: block; }
-    .notice.demo b { color: #b07f00; }
-    .notice button {
-      margin-top: 8px;
-      padding: 5px 11px;
-      font-size: 12px;
-      background: var(--danger);
-      border-color: var(--danger);
-      color: #fff;
-      font-weight: 600;
-    }
-    .scenario-tag {
-      display: inline-block;
-      margin-left: 6px;
-      padding: 1px 7px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 11px;
-    }
-    footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 11.5px;
-    }
-    footer button { padding: 4px 9px; font-size: 12px; }
-    kbd {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-bottom-width: 2px;
-      border-radius: 4px;
-      padding: 1px 4px;
-      font-family: inherit;
-      font-size: 11px;
-    }
-  </style>
+  <link rel="stylesheet" href="../styles/theme.css">
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <header>
-    <div class="logo"></div>
-    <h1>Bilingual Reader</h1>
-    <span class="ver" id="ver"></span>
+  <header class="hero">
+    <div class="hero-bar">
+      <div class="brand">
+        <img class="kai-logo" src="../styles/assets/brand.png" alt="">
+        <span>Bilingual Reader</span>
+      </div>
+      <button id="options" class="settings-button" type="button" aria-label="更多设置" title="更多设置">
+        <img src="../styles/assets/settings.svg" alt="">
+      </button>
+    </div>
+    <h1>网页翻译</h1>
+    <img class="hero-orb" src="../styles/assets/orb.webp" alt="">
   </header>
 
-  <div class="notice" id="notice">
-    <b>尚未配置翻译引擎</b>
-    扩展只支持对接大模型 API。请在设置页「翻译引擎」里选一个供应商、填上 API Key，
-    否则无法翻译。
-    <button id="noticeConfig">去配置翻译引擎</button>
-  </div>
-
-  <div class="notice demo" id="demoNotice">
-    <b>当前是演示模式</b>
-    译文由本机内置的小词表拼出，不联网、不是真正的机器翻译，仅用于体验界面与流程。
-  </div>
-
-  <button class="primary" id="toggle">翻译此页</button>
-  <div class="translation-actions">
-    <button id="pause" disabled title="暂停请求，保留已有译文；继续时从暂停位置的上一段接着翻译">暂停</button>
-    <button id="retranslate" disabled title="清除本页译文，跳过旧缓存，从第一段重新翻译">重新翻译</button>
-  </div>
-
-  <div class="row">
-    <label>显示模式</label>
-    <div class="seg" id="modes">
-      <button data-mode="dual" class="on">双语对照</button>
-      <button data-mode="translation">仅译文</button>
-      <button data-mode="original">仅原文</button>
+  <main class="popup-main">
+    <div class="notice" id="notice">
+      <strong>尚未配置翻译引擎</strong>
+      <p>连接模型 API 后即可翻译当前网页。</p>
+      <button id="noticeConfig" type="button">去配置翻译引擎 <span aria-hidden="true">↗</span></button>
     </div>
-  </div>
 
-  <div class="row">
-    <label>目标语言</label>
-    <select id="lang"></select>
-  </div>
+    <div class="notice demo" id="demoNotice">
+      <strong>当前为演示模式</strong>
+      <p>译文由本机内置词表生成，仅用于体验翻译流程。</p>
+    </div>
 
-  <div class="row">
-    <label>翻译引擎</label>
-    <select id="engine"></select>
-  </div>
+    <section class="workspace" aria-label="翻译偏好">
+      <div class="fields">
+        <label class="field" for="lang">目标语言<select id="lang"></select></label>
+        <label class="field" for="engine">翻译引擎<select id="engine"></select></label>
+      </div>
 
-  <div class="row">
-    <label>翻译风格</label>
-    <span id="scenarioName" class="scenario-tag">通用</span>
-  </div>
+      <div class="preference-row">
+        <span>翻译风格</span>
+        <button id="scenarioSettings" class="scenario-tag" type="button" aria-label="设置翻译风格">
+          <img src="../styles/assets/stars.svg" alt=""><span id="scenarioName">通用</span><span aria-hidden="true">›</span>
+        </button>
+      </div>
 
-  <div class="status" id="status">正在读取页面状态…</div>
-  <button id="retry" hidden style="margin-top: 8px; width: 100%">重试失败段落</button>
-  <button id="floatingToggle" style="margin-top: 8px; width: 100%" title="在普通网页右侧显示或隐藏可上下拖动的翻译浮签">隐藏网页浮签</button>
-  <button id="studyCollection" style="margin-top: 8px; width: 100%">学习收藏</button>
+      <div class="preference-row mode-row">
+        <span id="modeLabel">显示模式</span>
+        <div class="seg" id="modes" role="group" aria-labelledby="modeLabel">
+          <button type="button" data-mode="dual" class="on" aria-pressed="true">双语对照</button>
+          <button type="button" data-mode="translation" aria-pressed="false">仅译文</button>
+          <button type="button" data-mode="original" aria-pressed="false">仅原文</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="translate-controls">
+      <button class="primary" id="toggle" type="button" disabled>翻译此页</button>
+      <div class="translation-actions">
+        <button id="pause" type="button" disabled title="暂停请求，保留已有译文；继续时从暂停位置的上一段接着翻译">暂停</button>
+        <button id="retranslate" type="button" disabled title="清除本页译文，跳过旧缓存，从第一段重新翻译">重新翻译</button>
+      </div>
+      <div class="status" id="status" role="status">正在读取页面状态…</div>
+      <button id="retry" class="retry" type="button" hidden>重试失败段落</button>
+    </div>
+  </main>
 
   <footer>
-    <button id="options">更多设置</button>
-    <span><kbd>Alt</kbd> + <kbd>T</kbd> 快速切换</span>
+    <div class="utilities">
+      <button id="floatingToggle" type="button" title="在普通网页右侧显示或隐藏可上下拖动的翻译浮签">隐藏网页浮签</button>
+      <button id="studyCollection" type="button">学习收藏 <span aria-hidden="true">↗</span></button>
+    </div>
+    <div class="footnote">
+      <span><kbd>Alt</kbd> + <kbd>T</kbd> 快速切换</span>
+      <span id="ver"></span>
+    </div>
   </footer>
 
   <script src="../shared/defaults.js"></script>

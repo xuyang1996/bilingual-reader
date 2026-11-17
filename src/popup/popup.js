@@ -178,7 +178,9 @@
   function renderMode(mode) {
     var btns = $('modes').querySelectorAll('button');
     for (var i = 0; i < btns.length; i++) {
-      btns[i].classList.toggle('on', btns[i].getAttribute('data-mode') === mode);
+      var selected = btns[i].getAttribute('data-mode') === mode;
+      btns[i].classList.toggle('on', selected);
+      btns[i].setAttribute('aria-pressed', String(selected));
     }
   }
 
@@ -207,7 +209,7 @@
       if (page.paused) bits.push('已暂停 · 点击继续，从上一段接着翻译');
       renderStatus(bits.length ? bits.join(' · ') : '翻译中…', false);
     } else {
-      renderStatus('尚未翻译 · 点击上方按钮开始', false);
+      renderStatus(readyEngineId() ? '尚未翻译 · 点击上方按钮开始' : '配置翻译引擎后即可开始', false);
     }
     renderMode(page.mode || 'dual');
     if (page.lang) $('lang').value = page.lang;
@@ -385,7 +387,8 @@
       });
     });
 
-    $('noticeConfig').addEventListener('click', openOptions);
+    $('noticeConfig').addEventListener('click', function () { openOptions('engines'); });
+    $('scenarioSettings').addEventListener('click', function () { openOptions('style'); });
 
     $('modes').addEventListener('click', function (e) {
       var btn = e.target.closest ? e.target.closest('button[data-mode]') : null;
@@ -401,16 +404,17 @@
       chrome.tabs.create({ url: chrome.runtime.getURL('src/study/collection.html') });
       window.close();
     });
-    $('options').addEventListener('click', openOptions);
+    $('options').addEventListener('click', function () { openOptions(); });
   });
 
-  function openOptions() {
+  function openOptions(panel) {
+    var hash = panel ? '#' + panel : '';
     if (!HAS_CHROME) {
-      window.open('../options/options.html', '_blank');
+      window.open('../options/options.html' + hash, '_blank');
       return;
     }
-    if (chrome.runtime.openOptionsPage) chrome.runtime.openOptionsPage();
-    else chrome.tabs.create({ url: chrome.runtime.getURL('src/options/options.html') });
+    if (!panel && chrome.runtime.openOptionsPage) chrome.runtime.openOptionsPage();
+    else chrome.tabs.create({ url: chrome.runtime.getURL('src/options/options.html') + hash });
     window.close();
   }
 })();

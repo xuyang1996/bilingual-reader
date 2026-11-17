@@ -7,11 +7,11 @@
   var speaking = null, voicesRequested = false;
   var css = '.study-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:7px 0}' +
     '.study-tools button{font:inherit;font-size:12px;padding:3px 8px;border:1px solid currentColor;' +
-    'border-radius:6px;background:transparent;color:inherit;cursor:pointer}' +
-    '.study-tools button:disabled{opacity:.55;cursor:default}.study-save[aria-pressed="true"]{background:#5988ae26}' +
+    'border-radius:8px;background:transparent;color:inherit;cursor:pointer}' +
+    '.study-tools button:disabled{opacity:.55;cursor:default}.study-save[aria-pressed="true"]{background:var(--accent-soft,#aa78ef30)}' +
     '.study-feedback{font-size:12px}.study-feedback:empty{display:none}' +
     '.study-word,.study-words{margin-top:8px}.study-words summary{cursor:pointer}' +
-    '.study-words .study-word{border-top:1px solid #8f9dae55;padding-top:6px}' +
+    '.study-words .study-word{border-top:1px solid var(--border,#9c85b455);padding-top:6px}' +
     '.study-ipa,.study-headword{font-size:12px;margin-left:6px;font-weight:400}' +
     '.study-root,.study-context{margin-top:4px}.study-context{font-size:13px}';
 

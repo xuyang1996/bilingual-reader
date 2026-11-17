@@ -1,0 +1,62 @@
+:root {
+  color-scheme: light;
+  --canvas: #f5f2fc;
+  --card: #fff;
+  --field: #f7f5fb;
+  --fg: #19152e;
+  --muted: #615b75;
+  --border: #e5def1;
+  --accent: #6834b6;
+  --accent-soft: #f1e9fc;
+  --accent-border: #c3a5ee;
+  --focus: #8b50d7;
+  --danger: #a52d4a;
+  --danger-bg: #fff2f5;
+  --warning: #81570e;
+  --warning-bg: #fff6e3;
+  --ok: #18734d;
+  --radius: 22px;
+  --control-radius: 12px;
+  --primary: linear-gradient(175deg, #2a1d50, #100b2c);
+  --wash: radial-gradient(ellipse at 9% 0%, #e0e3ff 0%, transparent 52%),
+    radial-gradient(ellipse at 100% 90%, #ebddfa 0%, transparent 56%), var(--canvas);
+  --hero: radial-gradient(ellipse at 90% 85%, #563395 0%, transparent 55%),
+    linear-gradient(135deg, #100b2c 20%, #21184e 75%, #2c205c);
+  --shadow: 0 14px 34px #27134a0f;
+  --ui-font: Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --canvas: #161027;
+    --card: #221a35;
+    --field: #2a2040;
+    --fg: #f4eefc;
+    --muted: #c3b6d7;
+    --border: #443756;
+    --accent: #d4b6ff;
+    --accent-soft: #38244f;
+    --accent-border: #8965b5;
+    --focus: #c6a0ff;
+    --danger: #ffb0c2;
+    --danger-bg: #47253b;
+    --warning: #f2cd8b;
+    --warning-bg: #3c2e32;
+    --ok: #78d7b0;
+    --primary: linear-gradient(170deg, #6445a6, #41306e);
+    --wash: radial-gradient(ellipse at 0% 0%, #2a2450 0%, transparent 56%),
+      radial-gradient(ellipse at 97% 80%, #352048 0%, transparent 55%), var(--canvas);
+    --shadow: 0 14px 34px #0c061f45;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; font: 14px/1.55 var(--ui-font); color: var(--fg); background: var(--wash); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+.kai-logo { display: block; width: 45px; height: auto; flex: none; }

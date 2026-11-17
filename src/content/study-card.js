@@ -32,21 +32,21 @@
       var shadow = host.attachShadow({ mode: 'open' });
       shadow.innerHTML = '<style>' +
         '*{box-sizing:border-box}[hidden]{display:none!important}' +
-        'button{font:inherit;cursor:pointer}button:focus-visible{outline:2px solid #2788dc;outline-offset:2px}' +
+        'button{font:inherit;cursor:pointer}button:focus-visible{outline:2px solid #8b50d7;outline-offset:2px}' +
         '.trigger,.panel{position:fixed;pointer-events:auto;direction:ltr;text-align:left;' +
         'font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;color-scheme:light dark;' +
-        'box-shadow:0 4px 18px #10223b30;margin:0}' +
-        '.trigger,.retry{border:1px solid #145fa8;background:#1769b5;color:#fff;border-radius:8px;padding:4px 10px}' +
+        'box-shadow:0 4px 18px #27134a30;margin:0}' +
+        '.trigger,.retry{border:1px solid transparent;background:linear-gradient(155deg,#593890,#201344);color:#fff;border-radius:10px;padding:4px 10px}' +
         '.trigger{white-space:nowrap}' +
         '.panel{width:min(350px,calc(100vw - 16px));padding:12px 14px;overflow:auto;overscroll-behavior:contain;' +
-        'background:#fff;color:#223046;border:1px solid #d8e0ec;border-radius:12px;overflow-wrap:anywhere}' +
+        'background:#fff;color:#19152e;border:1px solid #e5def1;border-radius:16px;overflow-wrap:anywhere}' +
         'header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}' +
         '.close{border:0;background:transparent;color:inherit;border-radius:6px;font-size:18px;line-height:1;' +
-        'width:26px;height:26px;padding:0}.close:hover{background:#8fa3bd30}' +
-        'h3,p,ul{margin:0}h3{font-size:13px;margin-bottom:3px}.explanation,.status{color:#526179}' +
+        'width:26px;height:26px;padding:0}.close:hover{background:#aa78ef30}' +
+        'h3,p,ul{margin:0}h3{font-size:13px;margin-bottom:3px}.explanation,.status{color:#615b75}' +
         '.source{font-weight:600}.detail,.phrases,.retry{margin-top:8px}ul{padding-left:19px}li+li{margin-top:4px}' +
-        '@media(prefers-color-scheme:dark){.panel{background:#202936;color:#edf3fc;border-color:#3d4c61}' +
-        '.explanation,.status{color:#c4d0e1}}' +
+        '@media(prefers-color-scheme:dark){.panel{background:#221a35;color:#f4eefc;border-color:#443756}' +
+        '.explanation,.status{color:#c3b6d7}}' +
         IMT.studyView.css +
         '</style>' +
         '<button type="button" class="trigger" aria-controls="imtl-study-panel" aria-expanded="false" hidden>学这句</button>' +

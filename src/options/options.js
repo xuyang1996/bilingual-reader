@@ -64,7 +64,7 @@
   function toast(text, isError) {
     var box = $('toast');
     box.textContent = text;
-    box.style.background = isError ? 'var(--danger)' : 'var(--fg)';
+    box.classList.toggle('error', !!isError);
     box.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { box.classList.remove('show'); }, 2200);
@@ -118,7 +118,10 @@
     }
     var btns = document.querySelectorAll('#sidebar button[data-panel]');
     for (var j = 0; j < btns.length; j++) {
-      btns[j].classList.toggle('on', btns[j].getAttribute('data-panel') === name);
+      var selected = btns[j].getAttribute('data-panel') === name;
+      btns[j].classList.toggle('on', selected);
+      if (selected) btns[j].setAttribute('aria-current', 'true');
+      else btns[j].removeAttribute('aria-current');
     }
     try {
       sessionStorage.setItem('imtl.panel', name);
@@ -371,7 +374,7 @@
       banner.classList.remove('warn', 'ok');
       $('engineBannerTitle').textContent = '还不能翻译。';
       $('engineBannerText').textContent =
-        '一个可用的引擎都还没有。在上面选一个引擎，填上 API Key（本地模型如 Ollama 可以选「无」鉴权），否则无法翻译。';
+        '请在下方选择引擎并完成配置。本地模型如 Ollama 可以选择「无」鉴权。';
       badge.hidden = false;
       return;
     }
@@ -1053,10 +1056,17 @@
       });
     });
 
-    // 恢复上次停留的面板
-    var last = null;
-    try { last = sessionStorage.getItem('imtl.panel'); } catch (e) { /* ignore */ }
-    showPanel(last || 'engines');
+    // 优先打开工具栏入口指定的面板，再恢复上次停留的位置。
+    var requestedPanel = location.hash.slice(1);
+    var panelButtons = Array.from($('sidebar').querySelectorAll('button[data-panel]'));
+    if (panelButtons.some(function (button) { return button.dataset.panel === requestedPanel; })) {
+      history.replaceState(null, '', location.pathname + location.search);
+      showPanel(requestedPanel);
+    } else {
+      var last = null;
+      try { last = sessionStorage.getItem('imtl.panel'); } catch (e) { /* ignore */ }
+      showPanel(last || 'engines');
+    }
 
     /* ---------------- 侧边栏 ---------------- */
 

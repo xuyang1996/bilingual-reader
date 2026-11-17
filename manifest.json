@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bilingual Reader — 双语对照翻译",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "网页段落双语对照翻译，支持英文句子解析、查词、音标、发音和本地收藏。可连接自备模型 API 或本地模型，支持术语库与敏感信息脱敏。",
   "minimum_chrome_version": "96",
   "icons": {
