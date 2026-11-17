@@ -4,7 +4,7 @@ Bilingual Reader — Chrome 应用商店发布包构建
 
 商店上传的压缩包要求：
   · manifest.json 必须在**压缩包根目录**（不能像仓库里的 zip 那样带一层目录）
-  · 不包含测试、文档、缓存文件
+  · 不包含测试、文档、缓存文件或独立部署的 KAI Trans 网页
   · 保留 demo/ —— 审核员要靠它验证功能（审核备注里指向了这个页面）
 
 用法:
@@ -17,6 +17,7 @@ import zipfile
 
 # 不进包的目录
 EXCLUDE_DIRS = {'__pycache__', '.git', 'node_modules', 'test', 'docs', 'store', '.idea', '.vscode'}
+EXCLUDE_ROOT_DIRS = EXCLUDE_DIRS | {'web'}
 # 不进包的文件
 EXCLUDE_FILES = {'.DS_Store', 'README.md', 'Thumbs.db'}
 
@@ -31,8 +32,8 @@ def build(src, out):
     with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
         for dirpath, dirnames, filenames in os.walk(src):
             rel = os.path.relpath(dirpath, src)
-            # 顶层目录一律排除（test/docs/store…），子目录按同一规则
-            dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
+            excluded = EXCLUDE_ROOT_DIRS if rel == '.' else EXCLUDE_DIRS
+            dirnames[:] = [d for d in dirnames if d not in excluded]
             for f in filenames:
                 if (f in EXCLUDE_FILES
                         or (f.startswith('README.') and f.endswith('.md'))
@@ -54,7 +55,7 @@ def verify(out):
             problems.append('manifest.json 不在压缩包根目录')
         for n in names:
             top = n.split('/')[0]
-            if top in EXCLUDE_DIRS:
+            if top in EXCLUDE_ROOT_DIRS:
                 problems.append('不该出现的目录：' + n)
             if n.endswith('.DS_Store') or '__pycache__' in n:
                 problems.append('不该出现的文件：' + n)

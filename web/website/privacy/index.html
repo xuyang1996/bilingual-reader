@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#faf9ff">
+  <meta name="description" content="Learn how KAI Trans loads its Android interface, stores settings on your device, and sends translation requests to your chosen model provider.">
+  <title>Privacy Policy — KAI Trans</title>
+  <link rel="icon" type="image/png" href="/assets/brand.png">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/" aria-label="KAI Trans home"><span class="brand-mark"><img src="/assets/brand.png" alt="" width="40" height="14"></span><span>KAI Trans</span></a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/">Home</a>
+        <a href="/privacy/" aria-current="page">Privacy Policy</a>
+      </nav>
+    </div>
+  </header>
+  <main class="policy">
+    <div class="container policy-content">
+      <nav class="policy-languages" aria-label="Privacy policy languages">
+        <a href="#en" lang="en">English</a>
+        <a href="#zh" lang="zh-CN">简体中文</a>
+      </nav>
+
+      <article id="en" lang="en" aria-labelledby="en-title">
+        <h1 id="en-title">KAI Trans Privacy Policy</h1>
+        <p class="policy-updated">Effective date: <time datetime="2026-11-11">November 11, 2026</time></p>
+        <p>This policy applies to the KAI Trans Android app (package <code>com.kaitrans.mobile</code>) and its companion official website. KAI Trans translates text you paste or enter using a model API you choose.</p>
+
+        <section aria-labelledby="en-device">
+          <h2 id="en-device">1. Data on your device</h2>
+          <p>The app stores your language preferences, translation styles, custom prompts, API type, API address, and model identifier on your device. A saved API key is encrypted with a key managed by Android Keystore and kept in the app’s private storage.</p>
+          <p>The source text and translation are used in the current page session for translation and display. The app has no translation history. You provide clipboard content through the system paste action. When you tap Copy translation, the app writes the current translation to the system clipboard. Android manages the copied content from that point.</p>
+        </section>
+
+        <section aria-labelledby="en-provider">
+          <h2 id="en-provider">2. Data sent to your chosen model service</h2>
+          <p>When you tap Translate, the app sends the source text, source and target language instructions, the selected style prompt (including any custom text you entered), and the model identifier to the API endpoint you configured over HTTPS. If you provide an API key, the request sends it to that endpoint as a credential. Test connection sends a fixed test message with the model and authentication information for the request.</p>
+          <p>The recipient is the model service or API gateway you select, such as an OpenAI-compatible service, Anthropic Claude, or Google Gemini. Requests go directly to the endpoint you configure. If you enter an address operated by KAI Trans as your model endpoint, the app sends the request to that address. The recipient can process request content, authentication credentials, and network information such as your IP address. Its use, retention, and deletion of that data depend on its terms, privacy policy, and your service configuration.</p>
+          <p>Use API endpoints you trust, and review the service provider’s data practices before sending text that contains personal information.</p>
+        </section>
+
+        <section aria-labelledby="en-hosting">
+          <h2 id="en-hosting">3. Android app interface hosting</h2>
+          <p>When the Android app starts, it requests the interface and its static assets from <code>https://app.kaitrans.eu.cc/</code> over HTTPS. The hosting service receives your connection IP address and standard request metadata to deliver the interface, troubleshoot errors, and protect the service. Page and asset requests do not include your translation text, custom prompts, or model API key.</p>
+          <p>The web server's access logs include request times and paths, response status, browser or WebView information, and the address visible to the web server. For standard Android requests, the logged address is the local proxy address. The server is configured to rotate access and error logs daily and retain up to 14 rotated copies in addition to the active logs.</p>
+        </section>
+
+        <section aria-labelledby="en-purpose">
+          <h2 id="en-purpose">4. Accounts, advertising, and analytics</h2>
+          <p>The current Android version has no account system or built-in advertising, analytics, or crash reporting SDKs. The developer does not sell personal information you provide through the app.</p>
+        </section>
+
+        <section aria-labelledby="en-retention">
+          <h2 id="en-retention">5. Retention and deletion</h2>
+          <p>On-device settings, styles, and keys remain until you change or remove them or clear the app’s storage. You can delete custom styles or restore a built-in style in the app, and replace the key in engine settings. To remove all local data, clear KAI Trans app storage in Android settings or uninstall the app.</p>
+          <p>Clearing app data does not remove data already received by your model service or revoke an issued API key. Use the provider’s channels to request access or deletion of the data it retains or to revoke a key.</p>
+        </section>
+
+        <section aria-labelledby="en-website">
+          <h2 id="en-website">6. Product website</h2>
+          <p>The official website uses static pages to provide product information and this privacy policy. The pages contain no forms or built-in analytics tracking, and visiting them does not require sending source text or model keys. Hosting and network security services may process standard access records such as IP addresses, browser types, and access times, and use short-lived security cookies to serve pages, detect automated requests, and prevent abuse.</p>
+        </section>
+
+        <section id="contact" aria-labelledby="en-contact">
+          <h2 id="en-contact">7. Developer and privacy contact</h2>
+          <p>Developer: <span data-privacy-operator>kaitrans</span></p>
+          <p>Company: Nova Finance Exchange Inc.</p>
+          <p data-privacy-contact-block>Privacy inquiries: <a data-privacy-contact href="mailto:admin@kaitrans.eu.cc">admin@kaitrans.eu.cc</a>.</p>
+          <p>Phone: <a href="tel:+19703479066">+1 970-347-9066</a></p>
+          <p>If you contact us by email, we use your email address and message to handle and respond to your request. We keep the correspondence for as long as needed to handle the request or meet legal obligations. Please keep your API key out of correspondence.</p>
+        </section>
+      </article>
+
+      <article id="zh" lang="zh-CN" aria-labelledby="zh-title">
+        <h2 class="policy-title" id="zh-title">KAI Trans 隐私政策</h2>
+        <p class="policy-updated">生效日期：<time datetime="2026-11-11">2026 年 11 月 11 日</time></p>
+        <p>本政策适用于 KAI Trans Android 应用（包名 <code>com.kaitrans.mobile</code>）及其配套官网。KAI Trans 让你使用自己选择的模型 API 翻译粘贴或输入的文本。</p>
+
+        <section aria-labelledby="zh-device">
+          <h3 id="zh-device">1. 设备上的数据</h3>
+          <p>应用将语言偏好、翻译风格、自定义提示词、接口类型、API 地址和模型标识保存到设备。你保存的 API 密钥使用 Android Keystore 管理的密钥加密，并存放在应用的私有存储中。</p>
+          <p>原文和译文在当前页面会话中用于翻译和显示。应用没有翻译历史记录。你通过系统粘贴功能主动提供内容，点击「复制译文」时，应用会把当前译文写入系统剪贴板。复制后的内容由 Android 系统管理。</p>
+        </section>
+
+        <section aria-labelledby="zh-provider">
+          <h3 id="zh-provider">2. 发送给所选模型服务的数据</h3>
+          <p>当你点击「开始翻译」，应用通过 HTTPS 将原文、源语言和目标语言指令、所选风格的提示词（包括你填写的自定义内容）及模型标识发往你配置的模型 API。如果你提供了 API 密钥，请求也会将密钥作为认证凭据发送给该端点。点击「测试连接」会发送固定测试文本及相关模型和鉴权信息。</p>
+          <p>接收方是你指定的模型服务商或 API 网关，例如 OpenAI 兼容服务、Anthropic Claude 或 Google Gemini。请求直接发往你配置的端点。如果你将 KAI Trans 运营的地址填为模型端点，应用会按你的配置向该地址发送请求。接收方可以处理请求内容、认证凭据和 IP 地址等网络信息。它如何使用、保留或删除这些数据，取决于其服务条款、隐私政策及你的服务配置。</p>
+          <p>请仅使用你信任的 API 端点，并在发送含有个人信息的文本前了解服务商的数据处理方式。</p>
+        </section>
+
+        <section aria-labelledby="zh-hosting">
+          <h3 id="zh-hosting">3. Android 应用界面托管</h3>
+          <p>Android 应用启动时通过 HTTPS 从 <code>https://app.kaitrans.eu.cc/</code> 请求界面和静态资源。托管服务接收连接 IP 地址和标准请求元数据，用于提供界面、排查错误和保护服务。界面和资源请求不包含翻译原文、自定义提示词或模型 API 密钥。</p>
+          <p>Web 服务器访问日志包含请求时间和路径、响应状态、浏览器或 WebView 信息，以及 Web 服务器看到的地址。Android 应用使用标准连接路径时，日志记录的是本地代理地址。服务器配置为每日轮转访问日志和错误日志，并在当前日志之外最多保留 14 份轮转归档。</p>
+        </section>
+
+        <section aria-labelledby="zh-purpose">
+          <h3 id="zh-purpose">4. 账号、广告和分析</h3>
+          <p>当前 Android 版本无账号体系，也没有内置广告、分析或崩溃报告 SDK。开发者不出售你通过应用提供的个人信息。</p>
+        </section>
+
+        <section aria-labelledby="zh-retention">
+          <h3 id="zh-retention">5. 保留和删除</h3>
+          <p>设备上的设置、风格和密钥会保留，直到你更改或删除它们，或清除应用存储。可以在应用里删除自定义风格或恢复预设，在引擎设置里替换密钥。要移除全部本地数据，可以在 Android 系统设置中清除 KAI Trans 的应用存储，或卸载应用。</p>
+          <p>清除应用数据不会删除模型服务商已收到的数据，也不会撤销已签发的 API 密钥。请通过相应服务商的渠道查询或删除其留存的数据，或撤销密钥。</p>
+        </section>
+
+        <section aria-labelledby="zh-website">
+          <h3 id="zh-website">6. 产品官网</h3>
+          <p>官网提供功能介绍及本隐私政策。站点采用静态页面，无表单或内置分析跟踪，浏览时无需提交翻译原文或模型密钥。站点托管和网络安全服务可能为提供页面、识别自动化请求和防止滥用而处理 IP 地址、浏览器类型、访问时间等常规访问记录，并使用短期安全 Cookie。</p>
+        </section>
+
+        <section aria-labelledby="zh-contact">
+          <h3 id="zh-contact">7. 开发者与隐私联系</h3>
+          <p>开发者：<span data-privacy-operator>kaitrans</span></p>
+          <p>公司：Nova Finance Exchange Inc.</p>
+          <p data-privacy-contact-block>隐私咨询邮箱：<a data-privacy-contact href="mailto:admin@kaitrans.eu.cc">admin@kaitrans.eu.cc</a>。</p>
+          <p>联系电话：<a href="tel:+19703479066">+1 970-347-9066</a></p>
+          <p>如果你发邮件联系我们，我们会使用你的邮箱地址和邮件内容处理及回复请求，并在处理请求或履行法律义务所需的期限内保留相关往来。请勿通过邮件发送 API 密钥。</p>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <a class="brand" href="/">KAI Trans</a>
+      <a href="/privacy/" aria-current="page">Privacy Policy</a>
+    </div>
+  </footer>
+</body>
+</html>

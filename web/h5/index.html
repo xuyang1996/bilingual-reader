@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09051f">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https:; base-uri 'none'; form-action 'none'">
+  <title>KAI Trans</title>
+  <link rel="icon" href="images/logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css?v=0.1.2">
+  <script defer src="prompts.js?v=0.1.2"></script>
+  <script defer src="model.js?v=0.1.2"></script>
+  <script defer src="app.js?v=0.1.2"></script>
+</head>
+<body>
+  <main class="screen home" id="home">
+    <header class="home-header">
+      <img class="logo" src="images/logo.png" alt="KAI" width="108" height="39">
+      <a class="icon-button glass" href="#settings" aria-label="Settings"><img src="images/settings.svg" alt=""></a>
+    </header>
+    <div class="hero-art" aria-hidden="true"><img src="images/orb.gif" alt=""></div>
+    <section class="intro" aria-labelledby="title">
+      <h1 id="title">AI Translation</h1>
+      <p>Paste text and choose a translation style.</p>
+    </section>
+    <form class="translator" id="translate-form">
+      <div class="workspace">
+        <div class="languages">
+          <label class="language">
+            <img id="source-flag" class="flag" src="images/flag_en.svg" alt="">
+            <span class="language-fields"><span>From</span><select id="source" aria-label="Source language"></select></span>
+          </label>
+          <button type="button" id="swap" class="swap" aria-label="Swap languages"><img src="images/swap.svg" alt=""></button>
+          <label class="language">
+            <img id="target-flag" class="flag" src="images/flag_zh.svg" alt="">
+            <span class="language-fields"><span>To</span><select id="target" aria-label="Target language"></select></span>
+          </label>
+        </div>
+        <div class="paper">
+          <div class="paper-toolbar">
+            <label for="input">Source text</label>
+            <a class="style-link" href="#styles" aria-label="Translation style: General"><img src="images/stars.svg" alt=""><span id="active-style">General</span><img src="images/chevron.svg" alt=""></a>
+          </div>
+          <textarea id="input" rows="3" maxlength="24000" placeholder="Paste or type text here" required></textarea>
+          <div class="paper-toolbar result-toolbar">
+            <span>Translation</span>
+            <button type="button" id="copy" class="text-button" hidden>Copy translation</button>
+          </div>
+          <div id="output" class="output empty" role="status" aria-live="polite">Your translation will appear here</div>
+        </div>
+      </div>
+      <div id="translation-status" class="notice" role="status" hidden></div>
+      <p class="hint request-disclosure" id="translation-disclosure">Translating sends your text, style prompt, and any configured API key to the model provider you selected.</p>
+      <button class="primary translate" type="submit" aria-describedby="translation-disclosure"><img src="images/translate.svg" alt=""> <span id="translate-label">Translate</span></button>
+    </form>
+  </main>
+
+  <main class="screen settings" id="settings" hidden>
+    <header class="bar">
+      <button class="icon-button back" type="button" data-back aria-label="Back"><img src="images/back.svg" alt=""></button>
+      <h1>Settings</h1>
+    </header>
+    <div class="panel-content">
+      <span class="section-label">Preferences</span>
+      <div class="menu">
+        <a class="menu-row" href="#engine">
+          <img src="images/globe.svg" alt="">
+          <span>Translation engine<small id="engine-summary">Not configured</small></span>
+          <img class="row-arrow" src="images/chevron.svg" alt="">
+        </a>
+        <a class="menu-row" href="#styles">
+          <img src="images/stars.svg" alt="">
+          <span>Translation styles<small id="style-summary">General</small></span>
+          <img class="row-arrow" src="images/chevron.svg" alt="">
+        </a>
+        <a class="menu-row" href="https://home.kaitrans.eu.cc/privacy/" rel="noreferrer">
+          <img src="images/globe.svg" alt="">
+          <span>Privacy policy</span>
+          <img class="row-arrow" src="images/chevron.svg" alt="">
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <main class="screen settings" id="engine" hidden>
+    <header class="bar">
+      <button class="icon-button back" type="button" data-back aria-label="Back"><img src="images/back.svg" alt=""></button>
+      <h1>Translation engine</h1>
+    </header>
+    <form class="panel-content page-form" id="engine-form">
+      <div class="section-intro">
+        <h2>Set up your model</h2>
+        <p>Connect the model API you want to use for translation.</p>
+      </div>
+      <div class="notice" id="engine-status" role="status"></div>
+      <span class="section-label">Engine settings</span>
+      <label class="card engine-picker">
+        <span>Translation engine</span>
+        <select id="provider" required aria-label="Choose an engine">
+          <option value="">Choose an engine</option>
+          <option value="openai">OpenAI-compatible</option>
+          <option value="anthropic">Anthropic Claude</option>
+          <option value="gemini">Google Gemini</option>
+        </select>
+      </label>
+      <div class="card engine-waiting" id="engine-waiting">
+        <div class="icon-tile"><img src="images/waiting.svg" alt=""></div>
+        <strong>Choose a translation engine</strong>
+        <p>Select a provider to enter its API URL, model, and key.</p>
+      </div>
+      <div class="card fields" id="engine-fields" hidden>
+        <label>API URL<input type="url" id="endpoint" inputmode="url" autocomplete="off" spellcheck="false" required disabled></label>
+        <label>Model<input type="text" id="model-name" autocomplete="off" spellcheck="false" required disabled></label>
+        <label>API key
+          <div class="secret-control">
+            <input type="password" id="secret" autocomplete="off" spellcheck="false" disabled>
+            <button type="button" class="text-button" id="toggle-secret" aria-pressed="false">Show</button>
+          </div>
+        </label>
+        <p class="hint" id="engine-hint"></p>
+        <p class="hint" id="test-disclosure">Testing sends a fixed sample and any configured API key to the selected endpoint.</p>
+        <button type="button" class="secondary" id="test-engine" aria-describedby="test-disclosure">Test connection</button>
+      </div>
+      <p class="hint" id="secret-hint">Your API key is encrypted and stored on this device.</p>
+      <div class="footer">
+        <button class="primary" type="submit" id="save-engine">Choose an engine</button>
+      </div>
+    </form>
+  </main>
+
+  <main class="screen settings" id="styles" hidden>
+    <header class="bar">
+      <button class="icon-button back" type="button" data-back aria-label="Back"><img src="images/back.svg" alt=""></button>
+      <h1>Translation styles</h1>
+    </header>
+    <div class="panel-content">
+      <div class="section-intro">
+        <h2>Match the style to your text</h2>
+        <p>Adjust terminology, tone, and formatting to suit the content.</p>
+      </div>
+      <div class="list-heading"><span class="section-label">Available styles</span><span class="current" id="current-style"></span></div>
+      <fieldset class="style-list" id="style-list"><legend class="sr-only">Select a translation style</legend></fieldset>
+      <div class="footer">
+        <a class="primary" href="#edit">+ Add a custom style</a>
+      </div>
+    </div>
+  </main>
+
+  <main class="screen settings" id="edit" hidden>
+    <header class="bar">
+      <button class="icon-button back" type="button" data-back aria-label="Back"><img src="images/back.svg" alt=""></button>
+      <h1>Edit style</h1>
+    </header>
+    <form class="panel-content page-form" id="style-form">
+      <div class="section-intro">
+        <h2 id="edit-title">Custom style</h2>
+        <p>Set instructions for how your text should be translated.</p>
+      </div>
+      <label class="field">Style name<input id="style-name" type="text" maxlength="40" required></label>
+      <label class="field">Description<textarea id="style-description" rows="2" maxlength="180" placeholder="Describe the content this style is for"></textarea></label>
+      <label class="field">Prompt<textarea id="style-prompt" rows="5" maxlength="6000" placeholder="Enter your translation instructions…"></textarea></label>
+      <p class="hint"><code>{target}</code> is replaced with the target language name.</p>
+      <div class="notice" id="style-status" role="status" hidden></div>
+      <div class="footer">
+        <button class="primary" type="submit">Save style</button>
+        <button class="text-button danger" type="button" id="remove-style" hidden>Delete style</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>
